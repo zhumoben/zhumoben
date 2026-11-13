@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "max": 100,
+  "groups": [
+    {
+      "id": "core",
+      "title": "核心实现",
+      "items": [
+        { "id": "cancel", "label": "取消与竞态", "max": 30, "fullCredit": "`AbortController` 贯穿请求；后发请求覆盖先发结果；卸载时中止" },
+        { "id": "state", "label": "状态与错误态", "max": 30, "fullCredit": "loading / empty / error 三态清晰；重试不重复请求" },
+        { "id": "design", "label": "接口设计", "max": 20, "fullCredit": "hook 与组件分离；可测试；返回值形状稳定" }
+      ]
+    },
+    {
+      "id": "craft",
+      "title": "工程细节",
+      "items": [
+        { "id": "detail", "label": "边界与可访问性", "max": 20, "fullCredit": "空数据、超时、键盘操作、屏幕阅读器" }
+      ]
+    }
+  ],
+  "bands": [
+    { "min": 90, "max": 100, "label": "Strong Senior", "tone": "accent" },
+    { "min": 78, "max": 89, "label": "Senior", "tone": "accent" },
+    { "min": 62, "max": 77, "label": "Senior 存疑", "tone": "amber" },
+    { "min": 45, "max": 61, "label": "Mid", "tone": "gray" },
+    { "min": 0, "max": 44, "label": "No Hire", "tone": "red" }
+  ]
+}

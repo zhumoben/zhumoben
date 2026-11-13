@@ -1,0 +1,15 @@
+import { defineConfig } from "tsup";
+
+export default defineConfig({
+  entry: {
+    cli: "src/cli.ts",
+    index: "src/index.ts",
+    schema: "src/schema.ts",
+  },
+  format: ["esm"],
+  target: "node20",
+  dts: false,
+  clean: true,
+  splitting: false,
+  sourcemap: true,
+});

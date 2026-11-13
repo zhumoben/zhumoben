@@ -1,0 +1,11 @@
+{
+  "name": "demo",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "zhumoben dev"
+  },
+  "devDependencies": {
+    "zhumoben": "workspace:*"
+  }
+}

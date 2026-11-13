@@ -1,0 +1,379 @@
+---
+title: 动态表单题
+subtitle: Senior 级评分与追问手册
+level: L4
+levelLabel: Senior
+duration: 30 min
+stack: React 19 · TypeScript 5
+format: 现场 / 共享编辑器
+tags: [react, typescript, live-coding, forms, senior]
+summary: 一道 30 分钟的 React + TypeScript live coding 题。重点不是「标准答案长什么样」，而是如何在 30 分钟里分辨出 senior 与 mid——代码能跑只是入场券。
+---
+
+## 评定框架
+
+先定评判哲学，再看细节。否则很容易被「代码写得挺整齐」带偏。
+
+这道题的表面要求（配置驱动渲染、受控组件、动态 key 的 state、TypeScript 类型）在 mid 级别就该会。所以对 senior 来说，**编码部分应该是「不出错」，而不是「做出来」**。
+
+原来这里是「编码 70 + 追问 30」。现在改成 **编码 100 分、追问不计分**——因为现场时间太不稳定，问得到问不到全看运气，把 30 分压在追问上等于给评分加了一个随机因子。追问仍然值得问，但它的产出是**笔记**，不是分数。
+
+<Callout tone="info">
+
+**核心判据**：他是否把这道题当成一个「会被人用、会被人改」的组件来设计。
+
+mid 关心「让页面跑起来」；senior 关心「这个 API 明天要加字段类型、要接后端配置、要被别人复用，会怎样」。
+
+</Callout>
+
+### 三个必须明确的前提
+
+- **题面本身是有缺陷的。** `select` 没有 options，`type` 被写成 `string` 却实际是闭合集合。senior 应当主动发现并处理；mid 会照字面实现。
+- **30 分钟写不出生产级表单。** 所以不要求校验、i18n、错误态全实现，但要求他**知道这些东西缺在哪、会怎么加**。
+- **追问不计分，但仍然要问。** 记进评分表的 `Questions` 里，作为同分排序和复议的依据——不加分，但会留下证据。
+
+### 不要用这道题判断的事
+
+设计系统审美、CSS 能力、复杂状态管理（Redux / Zustand）、后端协作经验——这些它都测不到，别顺手扣分。
+
+## 考察要点
+
+每一项都给出「及格表现」与「资深表现」，现场对照打分，而不是凭感觉。
+
+| 维度 | mid（及格即可） | senior（期望达到） |
+| --- | --- | --- |
+| 需求澄清 | 直接开写，遇到问题再补 | 开场 2 分钟内点出 `select` 缺 `options`、`type` 应建为闭合集合，并说明自己的取舍 |
+| 类型建模 | `Record<string, string>` 管住 state，字段仍用 `type: string` | 用判别联合建模配置，`switch` 后自动收窄，并用 `never` 兜住穷尽性 |
+| 状态设计 | 一个 `useState` 存所有字段，`onChange` 靠 `name` 区分 | 同上，但能说清「为什么不用每字段一个 state」「受控所有权应该放在哪一层」 |
+| 组件 API | 只吃 `fields`，提交靠 `console.log` | 设计 `onSubmit` / `onChange` 回调，支持受控与非受控两种用法，留出自定义控件的逃生口 |
+| 边界处理 | 能渲染、能提交、值不互相覆盖 | 初始值齐全；`fields` 变化时只增删 key、不覆盖已输入值；未知 type 有兜底 |
+| 细节质量 | `preventDefault`、`key` 用 name | label 绑定 `htmlFor`、`required` 语义、`aria-describedby`、原生约束与自定义校验的边界 |
+| 验证习惯 | 写完随手点一下能输入 | 按清单逐项验证：输入 A → 输入 B → 回看 A 是否还在；清空 number；切 select |
+
+### senior 独有的六个「信号」
+
+出现任意 3 条以上，基本可以确认不是靠背题。**注意：这些不是必须全中**，全中是强 senior。
+
+- 主动区分「**编译期类型安全**」与「**运行时数据校验**」，并指出后端配置需要 zod / 手写 guard。
+- 主动讨论 **state 所有权**：组件内部 state 与父级受控模式各自的代价。
+- 提到 **扩展成本**：新增一种字段类型要改几处？是不是只改一个 switch。
+- 对 `number` 输入提出「存字符串、提交时转换」的具体理由，而不是含糊地说「要处理一下」。
+- 被问到性能时，能区分「**重渲染**」与「**昂贵计算**」，不会一上来就 `useMemo` 包住整个 map。
+- 主动说「这题如果上生产我会直接用 React Hook Form，理由是……」——**知道轮子在哪、也知道为什么现在不用**。
+
+## 题面缺口
+
+这一节是本题最有区分度的部分。不要求他全找出来，但要看他有没有「找」这个动作。
+
+| 缺口 | 不处理的后果 | senior 的处理方式 |
+| --- | --- | --- |
+| `select` 没有 options | 渲染出一个空下拉框，界面可用性为零 | 直接补 `options: { label, value }[]`，并说明「题目没给，我按常见形态补上」 |
+| `type` 声明为 `string` | 拼错 `"nubmer"` 也能编译，静默渲染错误控件 | 建为字面量联合；同时留运行时兜底，因为后端数据不受 TS 保护 |
+| 没说值存 string 还是 number | 存 number 时输入框清空 → `Number("") === 0`，用户无法删除内容 | 统一存 string，提交时统一转换 / 校验，并解释这个决定的理由 |
+| 没说 `fields` 会不会变 | 异步加载后新增字段提交不到、被删字段留下脏 key | 说明 `useState` 初值只算一次；给出「key 集合对账」「提交时投影」「key 重挂载」三种方案并讲代价 |
+| 没说初始值从哪来 | 编辑场景无法回填 | 提一句可加 `defaultValues?: Partial<FormValues>` |
+| 没提校验与错误展示 | 提交出去的是脏数据 | 指出「校验是独立一层」，说明错误态结构与展示位置 |
+| 没提可访问性 | 屏幕阅读器读不出字段含义 | label + `htmlFor` + `id`，`aria-describedby` 关联辅助文案 |
+
+<Callout tone="warn">
+
+**打分口径**：发现 0 条 → 编码维度封顶 55 分；发现 1–2 条 → 正常；发现 3 条以上并给出方案 → 编码维度给满并直接进 senior 档。
+
+不要因为他「没问就补了」而扣分——**补了并说明理由**和**问出来**同等计分，30 分钟里前者更现实。
+
+</Callout>
+
+## 参考答案
+
+先给一个「及格线参考」，再给 senior 版。两者的差距就是你现场要看的差距。
+
+### Senior 参考实现
+
+下面这份是 30 分钟内**可以写完**的完整版本。重点不在行数，而在五个结构决策：判别联合、单一 values 对象、共享 handler、控制渲染函数，以及 `fields` 变化时只对账 key 集合。
+
+```tsx
+/* 1. 配置：用判别联合，而不是 type: string */
+export interface FieldBase {
+  name: string;
+  label?: string;
+  required?: boolean;
+  helperText?: string;
+  defaultValue?: string;
+}
+
+export interface TextField extends FieldBase {
+  type: "text";
+  placeholder?: string;
+}
+
+export interface SelectOption {
+  label: string;
+  value: string;
+}
+
+export interface SelectField extends FieldBase {
+  type: "select";
+  options: readonly SelectOption[]; // 题面缺失，必须主动补
+}
+
+export type FieldConfig = TextField | NumberField | SelectField;
+
+/* 2. 状态：单一对象，值统一为 string */
+export type FormValues = Record<string, string>;
+
+const buildInitialValues = (
+  fields: readonly FieldConfig[],
+  defaults?: Partial<FormValues>,
+): FormValues => {
+  const values: FormValues = {};
+  for (const field of fields) {
+    values[field.name] = defaults?.[field.name] ?? field.defaultValue ?? "";
+  }
+  return values;
+};
+
+export function DynamicForm({ fields, defaultValues, onSubmit }: DynamicFormProps) {
+  const [values, setValues] = useState<FormValues>(() =>
+    buildInitialValues(fields, defaultValues),
+  );
+
+  // fields 变了只对账 key 集合，绝不覆盖已输入的值
+  const fieldKey = fields.map((f) => f.name).join("|");
+  useEffect(() => {
+    setValues((prev) => {
+      const next = { ...prev };
+      let dirty = false;
+      for (const field of fields) {
+        if (!(field.name in next)) {
+          next[field.name] = defaultValues?.[field.name] ?? field.defaultValue ?? "";
+          dirty = true;
+        }
+      }
+      const names = new Set(fields.map((f) => f.name));
+      for (const key of Object.keys(next)) {
+        if (!names.has(key)) {
+          delete next[key];
+          dirty = true;
+        }
+      }
+      return dirty ? next : prev;
+    });
+  }, [fieldKey]);
+
+  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setValues((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const payload = Object.fromEntries(
+      fields.map((field) => [field.name, values[field.name] ?? ""]),
+    );
+    onSubmit?.(payload);
+  };
+
+  // ...renderControl 用 switch + never 穷尽检查
+}
+```
+
+<Callout tone="bad">
+
+**及格线版本能过 60 分，但拿不到 senior 档**。问题不在「没写 select」，而在于类型是 `string` 而不是闭合集合、没有可扩展结构、没有任何边界处理。
+
+</Callout>
+
+### 每个决策的理由（现场可以直接拿这段追问）
+
+| 决策 | 理由 | 反例后果 |
+| --- | --- | --- |
+| 判别联合 | 让 `switch` 自动收窄，编译期阻止漏 case | 用 `string`：新增类型静默漏渲染，上线才发现 |
+| 值统一 string | DOM 的 `value` 本质就是字符串 | 存 number：清空输入框变 0，无法输入小数点 / 负号中间态 |
+| 单一 values 对象 | 一份真相、一个 handler、一次提交拿到全部 | 每字段一个 state：动态数量的字段需要循环调 hook |
+| 初始值全量填充 | 保证每个控件从头到尾受控 | `value={undefined}` → React 警告并转为非受控 |
+| `fields` 变化时对账 key 集合 | 补新增、删移除，**不覆盖**已输入的值 | 整体重置 values：用户正在输入的内容被冲掉 |
+| 提交时再投影一次 | payload 与当前 UI 严格一致 | 字段刚删完立刻提交，脏 key 会漏出去 |
+| 共享 handler 用 `name` | 横向扩展零成本 | 30 个字段就是 30 个函数 |
+| `key={field.name}` | 稳定标识，重排不串值 | 用 index：顺序变化时 DOM 实例复用错位 |
+
+## 评分标准
+
+编码 100 分，追问不计分。五个维度按「实现 → 状态 → 类型 → 边界 → 细节」排列，越靠前越致命。
+
+<Rubric />
+
+<Callout tone="info">
+
+**追问不占分**。现场问到什么，写进右侧评分表的 `Questions` 笔记里即可。它不改变总分，但会在两个候选人同分时决定排序，也会在复议时留下依据。
+
+这样做的原因很现实：30 分钟里能不能问出东西，取决于候选人写得快不快、你剩多少时间——把它做成固定分值，等于给评分加了一个随机因子。
+
+</Callout>
+
+## 现场观察点
+
+同一份代码，过程信号可能完全相反。以下按时间轴给出「该看什么」。
+
+<Timeline>
+<Step time="00:00 – 04:00" title="澄清与建模（不该有代码）">
+
+- 看提问质量：是否问到 options、number 的值类型、fields 是否动态。
+- 看动手顺序：先定 `FieldConfig` 再写组件，是 senior 的典型习惯。
+- 偏差：一句不问直接 `function DynamicForm({ fields })` 开写——通常 18 分钟时才发现 select 没得选。
+
+</Step>
+<Step time="04:00 – 18:00" title="主体实现（你的沉默期）">
+
+- 只盯两行：`setValues((prev) => ({ ...prev, [name]: value }))` 与 `switch (field.type)`。
+- 不要提示。卡住超过 2 分钟只给一句：「要不要先跑起来看看？」
+- 看报错处理：读提示、查类型 vs `as any` 糊过去。后者是最强负信号。
+
+</Step>
+<Step time="18:00 – 24:00" title="自测（信息量最大的一段）">
+
+- 让他自己验，别指路。看他测不测「输入 A → 输入 B → 回看 A」。
+- 只测「能打字」就宣布完成的人，通常是照着记忆写的。
+
+</Step>
+<Step time="24:00 – 30:00" title="追问（不计分，写进 Questions）">
+
+- 挑 2–3 题：状态同步、key 级类型、扩展 checkbox。
+- 每题给 60 秒，不打断。
+
+</Step>
+</Timeline>
+
+### 让他自己点的验证清单
+
+<Checklist>
+
+- 输入字段 A → 输入字段 B → 回看 A 的值是否还在
+- 切换 select → 提交后 state 里是否有该 key
+- number 框清空 → 是否报错 / 变成 0 / 无法继续输入
+- 点 Submit → console 输出的 key 是否齐全、页面是否刷新
+- 去掉某个字段的 `label` → 是否回退到 name
+
+</Checklist>
+
+## 追问清单
+
+按「验真 → 设计 → 工程」三层递进。**这一节不计分**——时间不够可以完全不问；问到什么，记进右侧面板的 Questions。
+
+<Q label="Q1" question="用户把 number 输入框清空，你的 state 里是什么？提交时怎么办？">
+
+**期望**：state 里是 `""`。因为存的是 string，天然允许「空」和「输入中间态」。转换放到提交时统一做，空串映射为 `null` 或触发校验。
+
+**失分回答**：「存 number，清空就是 0」——说明没意识到受控输入会被格式化劫持。
+
+</Q>
+
+<Q label="Q4" question="如果 fields 这个 prop 在挂载后才变化，你的表单会怎样？" open>
+
+**期望**：先说清事实——`useState` 的初值只计算一次，`fields` 变化不会让 `values` 跟着变。真正的风险是**提交结构与 UI 不一致**：
+
+- **新增字段**：UI 立刻出现，但 state 里没有这个 key，用户不碰它就提交不到。
+- **删除字段**：UI 立刻消失，但 `values` 里留着旧值，提交时把脏 key 一起发给后端。
+- **只改 label / 调整顺序**：完全没问题，state 按 name 索引。
+
+**可接受方案**：key 集合对账（参考实现用的就是这招）、提交时投影、key 重挂载、提升 state。要说清代价。
+
+**失分回答**：「在 `useEffect` 里整体重置 values」——覆盖用户正在输入的内容，依赖写 `[fields]` 时遇到内联数组还会无限循环。
+
+</Q>
+
+<Q label="Q6" question="现在要加一个 checkbox，你要改哪些地方？">
+
+**期望**：三处改动。
+
+- 联合类型加一个 `CheckboxField`；
+- `switch` 加一个 case，`never` 检查会提醒他；
+- state 类型放宽成 `Record<string, string | boolean>`，且 checkbox 读的是 `e.target.checked` 而不是 `value`。
+
+</Q>
+
+<Q label="Q9" question="字段从 3 个变成 200 个，每次输入都重渲染，怎么优化？">
+
+**期望**：先判断瓶颈在哪，而不是直接上 `useMemo`。
+
+- 把单个字段抽成子组件 + `React.memo`；
+- handler 用 `useCallback` 稳定引用；
+- 确实是大表单时，考虑 `useReducer` + context 分区，或直接上 React Hook Form。
+
+**失分回答**：「用 `useMemo` 把 `fields.map` 包起来」——values 变了必然要重新渲染，memo 化 JSX 数组不但没用，还增加开销。
+
+</Q>
+
+## 红旗与绿旗
+
+快速对照。红旗出现两条以上，建议无论代码多漂亮都降一档。
+
+<Duo>
+<Panel tone="good" title="✓ 绿旗（senior 信号）">
+
+- 开场就问 select 的 options 从哪来
+- 先写类型，再写 UI
+- `setValues(prev => ...)` 一次写对
+- 主动说「value 存 string，提交时再转」
+- 写完自己按清单验证，发现边界问题
+- 承认某处是过度设计 / 承认自己不确定
+
+</Panel>
+<Panel tone="bad" title="✕ 红旗（负信号）">
+
+- `as any` / `@ts-ignore` 解决类型报错
+- 在 map 里调用 `useState`
+- 直接 mutate：`values[name] = v; setValues(values)`
+- 全程不跑、不测，写完就说「好了」
+- 用 `useEffect` 同步 props 到 state
+- 把「没写 select」解释成「题目没说，所以不做」
+
+</Panel>
+</Duo>
+
+<Callout tone="bad">
+
+**最强负信号：`as any` 逃逸**。不是因为它难看，而是因为它在 senior 面试里的含义是「遇到类型系统就绕过，而不是理解它」——而本题 25 分就在考类型建模。
+
+</Callout>
+
+## 操作手册
+
+可以直接照读的话术 + 介入规则 + 加难变体。
+
+### 开场（30 秒，照读即可）
+
+<Callout tone="info">
+
+「这里有道题，30 分钟，React + TypeScript。需求写得比较简略，**如果有不清楚的地方你可以直接问我，或者自己决定然后告诉我理由**。
+
+写的过程中我会看着但不打断你。最后 5 分钟我会问几个问题。可以吗？」
+
+</Callout>
+
+最后那句「我会问问题」很重要：它会提前触发候选人的自我审查，让水平差异更早暴露。
+
+### 介入规则
+
+- **卡住 2 分钟以上**：只给方向，不给答案。「你可以先在浏览器里看一下现在什么表现。」
+- **出现状态覆盖 bug**：不要提醒。等他自己发现——这是本题最重要的观察点。
+- **出现 `any` 逃逸**：问一句「这里为什么用 any？有没有别的写法？」然后看他是否愿意改。
+- **时间过半还没渲染出东西**：直接让他跳过类型细节，先把 UI 跑起来。
+
+### 如果 20 分钟就做完了：加难变体
+
+| 变体 | 加什么 | 考察点 |
+| --- | --- | --- |
+| 条件显示 | 字段加 `dependsOn: { name, value }` | 派生状态、隐藏字段的值该怎么处理 |
+| 分组 | 支持 `group` 嵌套，payload 变成嵌套对象 | 递归渲染、路径式 key 的设计 |
+| 异步 options | `options` 改为返回 Promise 的函数 | loading / 竞态 / 卸载后 setState |
+| 跨字段校验 | 「确认密码」必须等于「密码」 | 校验层与状态层解耦 |
+
+### 结束话术（30 秒）
+
+<Callout tone="good">
+
+「代码先到这里。如果再多给你半小时，你会先改哪一处？为什么是它？」
+
+答「加校验」和答「把 values 提升出去以便复用」是两种完全不同的工程直觉。
+
+</Callout>

@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>{{question.title}} · {{record.candidate}} · 评分报告</title>
+<style>
+  :root {
+    --paper: #f2f3f5; --card: #fff; --ink: #15181c; --ink-2: #4f5862; --ink-3: #8b939d;
+    --line: #e3e6ea; --accent: #46647a; --accent-deep: #2e4657; --accent-soft: #e6edf2;
+    --amber: #b07d2e; --amber-bg: #f7efdf; --red: #a2413a; --red-bg: #f7e7e5;
+    --serif: "Castoro", "Songti SC", "Noto Serif SC", Georgia, serif;
+    --sans: "Inter", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+    --mono: "Cascadia Code", "Sarasa Mono SC", ui-monospace, Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font: 14px/1.7 var(--sans); }
+  .hero { padding: 44px 40px 38px; color: #eef2f5; background: linear-gradient(165deg, #232c35, #10161c); }
+  .hero-inner { max-width: 900px; margin: 0 auto; }
+  .eyebrow { font: 500 10px/1 var(--mono); letter-spacing: .2em; text-transform: uppercase; color: rgba(238,242,245,.42); }
+  h1 { margin: 14px 0 6px; font: 400 34px/1.2 var(--serif); letter-spacing: -.02em; }
+  .sub { margin: 0; font: 400 15px/1.6 var(--serif); color: rgba(238,242,245,.62); }
+  .meta { display: flex; flex-wrap: wrap; gap: 8px 22px; margin-top: 22px; font: 400 12px/1 var(--mono); color: rgba(238,242,245,.55); }
+  .meta b { color: #fff; font-weight: 500; }
+  .wrap { max-width: 900px; margin: 0 auto; padding: 32px 40px 64px; }
+  .score { display: flex; align-items: baseline; gap: 12px; margin: 8px 0 24px; }
+  .score strong { font: 400 46px/1 var(--serif); letter-spacing: -.03em; }
+  .score span { font: 400 13px/1 var(--mono); color: var(--ink-3); }
+  .bar { height: 5px; border-radius: 3px; background: #e2e5e9; overflow: hidden; margin-bottom: 26px; }
+  .bar i { display: block; height: 100%; background: var(--accent); }
+  h2 { font: 400 21px/1.4 var(--serif); margin: 34px 0 12px; padding-bottom: 8px; border-bottom: 1px solid var(--line); }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; background: var(--card); border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+  th { text-align: left; padding: 9px 12px; background: #f7f8f9; border-bottom: 1px solid var(--line);
+       font: 500 9.5px/1.8 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); }
+  td { padding: 10px 12px; border-bottom: 1px solid #eef0f3; vertical-align: top; }
+  tr:last-child td { border-bottom: 0; }
+  .num { font-family: var(--mono); text-align: right; font-variant-numeric: tabular-nums; }
+  .note { color: var(--ink-2); font-size: 12px; }
+  .badge { display: inline-block; padding: 1px 7px; border-radius: 4px; font-size: 11px; font-weight: 500; }
+  .badge-accent { background: var(--accent-soft); color: var(--accent-deep); }
+  .badge-amber { background: var(--amber-bg); color: #7d5716; }
+  .badge-gray { background: #eceef0; color: var(--ink-2); }
+  .badge-red { background: var(--red-bg); color: #7d332d; }
+  .notes { display: grid; gap: 10px; margin-top: 12px; }
+  .note-block { background: var(--card); border: 1px solid var(--line); border-left: 2px solid var(--line); border-radius: 6px; padding: 10px 14px; }
+  .note-block.pro { border-left-color: #6f9a8c; }
+  .note-block.con { border-left-color: #c08b84; }
+  .note-block.q { border-left-color: #7fa8c4; }
+  .note-block h3 { margin: 0 0 4px; font: 500 10px/1.6 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); }
+  .note-block p { margin: 0; white-space: pre-wrap; font-size: 13px; }
+  footer { margin-top: 36px; padding-top: 14px; border-top: 1px solid var(--line); font: 400 10.5px/1.6 var(--mono); color: var(--ink-3); }
+  @media print { body { background: #fff; } .hero { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+</style>
+</head>
+<body>
+<header class="hero">
+  <div class="hero-inner">
+    <div class="eyebrow">Interview Scorecard</div>
+    <h1>{{question.title}}</h1>
+    <p class="sub">{{question.subtitle}}</p>
+    <div class="meta">
+      <span>候选人 <b>{{record.candidate}}</b></span>
+      <span>面试官 <b>{{record.interviewer}}</b></span>
+      <span>{{record.date}} {{record.time}}</span>
+      <span>共 {{count}} 项 · 已评 {{filled}}</span>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="score">
+    <strong>{{total}}</strong><span>/ {{max}} · <span class="badge badge-{{tone}}">{{band}}</span></span>
+  </div>
+  <div class="bar"><i style="width:{{percent}}%"></i></div>
+
+  <h2>评分明细</h2>
+  <table>
+    <thead>
+      <tr><th style="width:40%">维度</th><th style="width:12%" class="num">得分</th><th style="width:10%" class="num">满分</th><th>备注</th></tr>
+    </thead>
+    <tbody>
+      {{#each rows}}
+      <tr>
+        <td>{{label}}</td>
+        <td class="num">{{#if score}}{{score}}{{else}}—{{/if}}</td>
+        <td class="num">{{max}}</td>
+        <td class="note">{{note}}</td>
+      </tr>
+      {{/each}}
+    </tbody>
+  </table>
+
+  <h2>面试笔记</h2>
+  <div class="notes">
+    <div class="note-block pro"><h3>Pro · 做得好</h3><p>{{#if record.notes.pros}}{{record.notes.pros}}{{else}}（未填写）{{/if}}</p></div>
+    <div class="note-block con"><h3>Con · 问题</h3><p>{{#if record.notes.cons}}{{record.notes.cons}}{{else}}（未填写）{{/if}}</p></div>
+    <div class="note-block q"><h3>Q · 待追问</h3><p>{{#if record.notes.questions}}{{record.notes.questions}}{{else}}（未填写）{{/if}}</p></div>
+  </div>
+
+  <footer>zhumoben · {{id}} · 生成于 {{generatedAt}}</footer>
+</div>
+</body>
+</html>

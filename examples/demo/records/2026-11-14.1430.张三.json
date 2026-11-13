@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "questionId": "dynamic-form",
+  "questionTitle": "动态表单题",
+  "candidate": "张三",
+  "interviewer": "李四",
+  "date": "2026-11-14",
+  "time": "14:30",
+  "scores": {
+    "render": { "score": 18, "note": "一次 map，key 用 name；number 空值处理正确" },
+    "state": { "score": 26, "note": "单一 values + 不可变合并；fields 变化只对账 key" },
+    "types": { "score": 26, "note": "判别联合 + never 穷尽检查；缺少运行时校验" },
+    "robust": { "score": 10, "note": "未知 type 有兜底；重复 name 没交代" },
+    "detail": { "score": 6, "note": "label 绑定正确；没提 aria-describedby" }
+  },
+  "notes": {
+    "pros": "判别联合建模、状态合并一次写对，自己发现了题面缺 options。",
+    "cons": "类型只在编译期兜底，没有提出后端 JSON 需要运行时校验。",
+    "questions": "如果再给半小时，会先补 zod 还是先拆 renderControl？"
+  },
+  "createdAt": "2026-11-14T06:30:00.000Z",
+  "updatedAt": "2026-11-14T07:12:00.000Z"
+}

@@ -1,0 +1,107 @@
+---
+title: 异步竞态与取消
+subtitle: 请求生命周期与错误处理
+level: L4
+levelLabel: Senior
+duration: 45 min
+stack: React 19 · TypeScript 5
+format: 现场 / 共享编辑器
+tags: [react, async, senior]
+summary: 一个搜索框，输入即请求。考察竞态、取消、错误态与空数据——代码能跑只是起点，重点是他有没有想过「先发的请求后回来」。
+---
+
+## 题目
+
+实现一个搜索面板：输入关键词后请求 `/api/search?q=`，展示结果。要求：
+
+- 连续输入时不出现「旧结果覆盖新结果」。
+- 可以取消正在进行的请求。
+- 请求失败时给出可重试的错误态，而不是白屏。
+
+<Callout tone="info">
+
+**考官提示**：先不要提「竞态」这个词。看他会不会自己想到乱序返回，以及是否会主动处理卸载后的 setState。
+
+</Callout>
+
+## 考察要点
+
+| 维度 | mid（及格即可） | senior（期望达到） |
+| --- | --- | --- |
+| 取消 | 用 `AbortController` 取消请求 | 说明取消的时机、signal 的传递、以及不取消的后果 |
+| 竞态 | 用一个 requestId / 时间戳丢弃旧结果 | 能说清「取消」和「丢弃」是两件事：前者省流量，后者保证正确 |
+| 错误态 | try / catch 后设一个 error 字符串 | 区分网络错误、HTTP 4xx/5xx、超时、取消，并给出不同的 UI |
+| 卸载 | 知道要清理副作用 | 知道 React 18+ 的 StrictMode 双调用，以及为什么不能用「isMounted ref」糊 |
+
+## 参考答案
+
+```tsx
+function useSearch(query: string) {
+  const [state, setState] = useState<SearchState>({ status: "idle" });
+
+  useEffect(() => {
+    if (!query.trim()) {
+      setState({ status: "idle" });
+      return;
+    }
+
+    const controller = new AbortController();
+    setState({ status: "loading" });
+
+    search(query, controller.signal)
+      .then((items) => setState({ status: "ok", items }))
+      .catch((error) => {
+        // 取消不是错误，不要把它画成红色
+        if (controller.signal.aborted) return;
+        setState({ status: "error", message: describe(error) });
+      });
+
+    return () => controller.abort();
+  }, [query]);
+
+  return state;
+}
+```
+
+<Callout tone="warn">
+
+**加分点**：主动说出「仅靠 abort 不够，服务端可能已经在处理；客户端仍要用 requestId 校验结果归属」。
+
+</Callout>
+
+## 追问清单
+
+<Q label="Q3" question="为什么不能用 isMounted 的 ref 来判断要不要 setState？" open>
+
+**期望**：`isMounted` 只能避免警告，不能避免状态和 URL 不一致；而且 React 18 的 StrictMode 会刻意双挂载，这个模式会误判。
+
+**更好的答案**：用 `AbortController` 表达「这次请求已经不需要了」，让取消成为一等公民。
+
+</Q>
+
+<Q label="Q5" question="用户快速输入 10 个字符，会发出几个请求？">
+
+**期望**：说明 debounce 与 abort 的区别：debounce 减少请求数，abort 保证正确性。两者通常都要。
+
+</Q>
+
+## 红旗与绿旗
+
+<Duo>
+<Panel tone="good" title="✓ 绿旗">
+
+- 主动提到乱序返回
+- 用 `AbortController` 而不是布尔开关
+- 把取消和错误分开处理
+- 能说出 debounce 与 abort 各自解决什么
+
+</Panel>
+<Panel tone="bad" title="✕ 红旗">
+
+- 只写 `let cancelled = false`，从不 abort
+- 把 `AbortError` 也画成错误提示
+- 在 render 里发请求
+- 说不出为什么 `useEffect` 的清理函数很重要
+
+</Panel>
+</Duo>

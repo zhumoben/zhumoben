@@ -1,0 +1,55 @@
+{
+  "version": 1,
+  "max": 100,
+  "groups": [
+    {
+      "id": "core",
+      "title": "核心实现",
+      "items": [
+        {
+          "id": "render",
+          "label": "动态渲染与受控",
+          "max": 20,
+          "fullCredit": "一次 `map` 生成全部控件，三类 type 都渲染正确；`value` 来自 state、`onChange` 回写；`key` 用 name；全程不出现受控 / 非受控漂移"
+        },
+        {
+          "id": "state",
+          "label": "状态模型",
+          "max": 30,
+          "fullCredit": "单一 state 对象；不可变合并更新；初始值覆盖全部字段；一个 handler 靠 name 分发；state 是界面值的唯一来源"
+        },
+        {
+          "id": "types",
+          "label": "类型建模",
+          "max": 30,
+          "fullCredit": "判别联合 + 正确收窄；`FormValues` 明确；`tsc --strict` 通过；出现 `never` 穷尽检查"
+        }
+      ]
+    },
+    {
+      "id": "craft",
+      "title": "工程细节",
+      "items": [
+        {
+          "id": "robust",
+          "label": "边界与健壮性",
+          "max": 12,
+          "fullCredit": "未知 type 有兜底；number 空值可控；select 有空选项；`fields` 变化能对账；重复 name 有交代"
+        },
+        {
+          "id": "detail",
+          "label": "细节与可访问性",
+          "max": 8,
+          "fullCredit": "label 关联正确；`required` 有语义；抽出渲染函数；命名可读、无拼写错误、无无效优化"
+        }
+      ]
+    }
+  ],
+  "bands": [
+    { "min": 90, "max": 100, "label": "Strong Senior", "tone": "accent" },
+    { "min": 80, "max": 89, "label": "Senior", "tone": "accent" },
+    { "min": 65, "max": 79, "label": "Senior 存疑", "tone": "amber" },
+    { "min": 50, "max": 64, "label": "Mid", "tone": "gray" },
+    { "min": 0, "max": 49, "label": "No Hire", "tone": "red" }
+  ]
+}
