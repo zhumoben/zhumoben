@@ -8,7 +8,7 @@
   },
   "scripts": {
     "dev": "pnpm --filter demo dev",
-    "build": "pnpm --filter zhumoben build",
+    "build": "pnpm -r build",
     "typecheck": "pnpm -r typecheck",
     "test": "pnpm --filter zhumoben test"
   },

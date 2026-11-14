@@ -11,4 +11,9 @@ declare module "virtual:zhumoben/questions" {
   }>;
 }
 
+declare module "virtual:zhumoben/config" {
+  import type { KitConfig } from "../../shared/types";
+  export const config: KitConfig;
+}
+
 declare module "*.css";

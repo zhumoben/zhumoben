@@ -30,11 +30,16 @@ diff.
 
 ## Quick start
 
-Create a private repository for your data (it can be empty):
+```bash
+npm create zhumoben@latest my-interviews
+cd my-interviews
+pnpm install
+pnpm dev        # http://localhost:5901
+```
+
+Or add it to an existing data repository:
 
 ```bash
-mkdir my-interviews && cd my-interviews
-pnpm init
 pnpm add -D zhumoben
 npx zhumoben init      # writes questions/, records/, kit.config.ts
 npx zhumoben dev
@@ -93,7 +98,6 @@ summary: 一道 30 分钟的 React + TypeScript live coding 题。
 ```
 
 ### `scorecard.json`
-
 ```json
 {
   "version": 1,
@@ -116,6 +120,23 @@ summary: 一道 30 分钟的 React + TypeScript live coding 题。
 
 `bands` must cover `0..max` without gaps. `zhumoben dev` refuses to start when
 the scorecard is inconsistent, and prints the reason.
+
+### `kit.config.ts`
+
+```ts
+export default {
+  title: "朱墨本",
+  port: 5900,      // release build (`zhumoben serve`)
+  devPort: 5901,   // dev server (`zhumoben dev`)
+  tags: {
+    react: { label: "React", color: "accent" },
+    "live-coding": { label: "Live coding" },
+  },
+};
+```
+
+`label` replaces the raw tag text in the UI; `color` is one of
+`accent | amber | gray | red` and defaults to `gray`.
 
 ## Records
 
@@ -160,11 +181,14 @@ Move the punctuation outside the emphasis instead:
 | Command | What it does |
 |---|---|
 | `zhumoben init` | Scaffold `questions/`, `records/` and `kit.config.ts` |
-| `zhumoben dev` | Start the local server (`--port`, `--open`) |
+| `zhumoben dev` | Start the local server on 5901 (`--port`, `--open`) |
+| `zhumoben build` | Build a static copy into `dist/` |
+| `zhumoben serve` | Serve `dist/` plus the records API on 5900 |
 | `zhumoben new-question <id>` | Create a question folder from the template |
 
-A static `zhumoben build` is on the roadmap; the records API needs a Node
-process, so the first version is deliberately dev-server only.
+`build` produces the static bundle; `serve` is what makes the records writable,
+because writing JSON needs a Node process. The dev server (5901) and the
+release server (5900) share the same API middleware.
 
 ## Development
 

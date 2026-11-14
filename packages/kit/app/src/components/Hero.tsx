@@ -1,5 +1,6 @@
 import type { Band, QuestionMeta } from "../../../shared/types";
 import { questionHref } from "../lib/router";
+import { Tag } from "./Tag";
 
 const TONE_BG: Record<Band["tone"], string> = {
   red: "#8d4a44",
@@ -145,6 +146,14 @@ export function QuestionHero({
             <b>{question.chapters.length}</b> 个章节
           </span>
         </div>
+
+        {question.tags.length > 0 && (
+          <div className="hero__tags">
+            {question.tags.map((tag) => (
+              <Tag key={tag} name={tag} />
+            ))}
+          </div>
+        )}
 
         <Scale bands={question.scorecard.bands} max={question.scorecard.max} />
       </div>

@@ -1,11 +1,21 @@
 import fs from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import Handlebars from "handlebars";
 import { bandOf, recordIdFor, totalOf } from "../../shared/score.js";
 import type { ExportFormat, ScoreRecord } from "../../shared/types.js";
 import type { LoadedQuestion } from "./questions.js";
 
-const TEMPLATE_ROOT = new URL("../templates/", import.meta.url);
+/** `dist/cli.js` -> `../templates`, `src/server/export.ts` -> `../../templates`. */
+function resolveTemplateRoot(): string {
+  const here = new URL(".", import.meta.url);
+  const candidates = ["../templates/", "../../templates/"].map((rel) =>
+    fileURLToPath(new URL(rel, here)),
+  );
+  return candidates.find((dir) => fs.existsSync(dir)) ?? candidates[0];
+}
+
+const TEMPLATE_ROOT = resolveTemplateRoot();
 
 export interface ExportResult {
   filename: string;
@@ -35,11 +45,8 @@ export function renderExport(
 
   const file = `scorecard.${format}.hbs`;
   const override = path.resolve(cwd, templatesDir, file);
-  const builtin = new URL(file, TEMPLATE_ROOT);
-  const source = fs.readFileSync(
-    fs.existsSync(override) ? override : builtin,
-    "utf8",
-  );
+  const builtin = path.join(TEMPLATE_ROOT, file);
+  const source = fs.readFileSync(fs.existsSync(override) ? override : builtin, "utf8");
 
   const template = Handlebars.compile(source, { noEscape: format === "md" });
 

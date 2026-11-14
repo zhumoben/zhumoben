@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import type { QuestionMeta, RecordSummary } from "../../../shared/types";
 import { questionHref } from "../lib/router";
+import { Tag } from "../components/Tag";
 
 export function BankPage({
   questions,
@@ -121,9 +122,7 @@ export function BankPage({
                   {question.summary && <div className="qrow__desc">{question.summary}</div>}
                   <div className="qrow__tags">
                     {question.tags.map((item) => (
-                      <span className="tag" key={item}>
-                        {item}
-                      </span>
+                      <Tag key={item} name={item} />
                     ))}
                   </div>
                 </div>

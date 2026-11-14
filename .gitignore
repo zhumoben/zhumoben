@@ -9,3 +9,4 @@ dist/
 # consumer data that should never be committed by accident
 examples/demo/dist/
 examples/demo/records/_trash/
+*.tgz

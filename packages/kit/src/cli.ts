@@ -2,7 +2,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { createServer } from "vite";
+import { createServer, build as viteBuild, preview as vitePreview } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import { loadConfig } from "./server/config.js";
@@ -22,6 +22,8 @@ zhumoben — local-first interview question bank and scorecard
 
 Usage:
   zhumoben dev [--port 5901] [--open]
+  zhumoben build
+  zhumoben serve [--port 5900]
   zhumoben init
   zhumoben new-question <id>
 
@@ -67,6 +69,16 @@ async function main(): Promise<void> {
     return;
   }
 
+  if (command === "build") {
+    await buildStatic(process.cwd());
+    return;
+  }
+
+  if (command === "serve") {
+    await serve(process.cwd(), argv.slice(1));
+    return;
+  }
+
   console.error(`unknown command "${command}"\n\n${HELP}`);
   process.exitCode = 1;
 }
@@ -87,12 +99,7 @@ async function dev(cwd: string, args: string[]): Promise<void> {
   }
 
   // Fail fast with a readable message instead of a Vite overlay.
-  try {
-    await loadAllQuestions(cwd);
-  } catch (error) {
-    console.error(`\n[zhumoben] ${(error as Error).message}\n`);
-    process.exit(1);
-  }
+  await assertQuestions(cwd);
 
   const portFlag = args.indexOf("--port");
   const port =
@@ -120,6 +127,66 @@ async function dev(cwd: string, args: string[]): Promise<void> {
       `  release :${config.port ?? RELEASE_PORT}\n` +
       `  data    ${cwd}\n` +
       `  questions ${ids.length}\n`,
+  );
+}
+
+async function assertQuestions(cwd: string): Promise<void> {
+  try {
+    await loadAllQuestions(cwd);
+  } catch (error) {
+    console.error(`\n[zhumoben] ${(error as Error).message}\n`);
+    process.exit(1);
+  }
+}
+
+async function buildStatic(cwd: string): Promise<void> {
+  const config = await loadConfig(cwd);
+  await assertQuestions(cwd);
+
+  const outDir = path.join(cwd, "dist");
+  await viteBuild({
+    root: appRoot,
+    configFile: false,
+    envDir: false,
+    base: "./",
+    plugins: [react(), tailwindcss(), zhumoben({ cwd, config })],
+    build: { outDir, emptyOutDir: true },
+  });
+
+  console.log(
+    `\n  built ${outDir}\n` +
+      `  next: zhumoben serve   (http://localhost:${config.port ?? RELEASE_PORT})\n`,
+  );
+}
+
+async function serve(cwd: string, args: string[]): Promise<void> {
+  const config = await loadConfig(cwd);
+  const outDir = path.join(cwd, "dist");
+
+  if (!fs.existsSync(path.join(outDir, "index.html"))) {
+    throw new Error("dist/index.html not found — run `zhumoben build` first");
+  }
+
+  await assertQuestions(cwd);
+
+  const portFlag = args.indexOf("--port");
+  const port =
+    portFlag >= 0 ? Number(args[portFlag + 1]) : (config.port ?? RELEASE_PORT);
+
+  const server = await vitePreview({
+    root: appRoot,
+    configFile: false,
+    envDir: false,
+    plugins: [react(), tailwindcss(), zhumoben({ cwd, config })],
+    build: { outDir },
+    preview: { port, open: config.open === true },
+  });
+
+  server.printUrls();
+  console.log(
+    `\n  zhumoben serve · ${config.title ?? "Interview Kit"}\n` +
+      `  url     http://localhost:${port}\n` +
+      `  data    ${cwd}\n`,
   );
 }
 

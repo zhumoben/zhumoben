@@ -28,6 +28,9 @@ export function zhumoben(options: ZhumobenPluginOptions): Plugin {
       if (id === "virtual:zhumoben/questions") {
         return `${VIRTUAL_PREFIX}questions`;
       }
+      if (id === "virtual:zhumoben/config") {
+        return `${VIRTUAL_PREFIX}config`;
+      }
       if (id.startsWith("virtual:zhumoben/question/")) {
         return VIRTUAL_PREFIX + id.slice("virtual:zhumoben/".length);
       }
@@ -38,6 +41,10 @@ export function zhumoben(options: ZhumobenPluginOptions): Plugin {
       if (!id.startsWith(VIRTUAL_PREFIX)) return null;
       const key = id.slice(VIRTUAL_PREFIX.length);
 
+      if (key === "config") {
+        return `export const config = ${JSON.stringify(config)};\n`;
+      }
+
       if (key === "questions") {
         return renderQuestionIndex(cwd);
       }
@@ -47,6 +54,10 @@ export function zhumoben(options: ZhumobenPluginOptions): Plugin {
       }
 
       return null;
+    },
+
+    configurePreviewServer(server) {
+      server.middlewares.use(createApiMiddleware({ cwd, config }));
     },
 
     configureServer(server: ViteDevServer) {

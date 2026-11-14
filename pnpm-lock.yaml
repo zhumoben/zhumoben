@@ -176,6 +176,18 @@ importers:
         specifier: workspace:*
         version: link:../../packages/kit
 
+  packages/create:
+    devDependencies:
+      '@types/node':
+        specifier: ^24.0.0
+        version: 24.19.2
+      tsup:
+        specifier: ^9.0.0
+        version: 9.0.0(jiti@2.7.0)(postcss@8.5.32)(typescript@5.9.3)
+      typescript:
+        specifier: ^5.9.0
+        version: 5.9.3
+
   packages/kit:
     dependencies:
       '@mdx-js/mdx':

@@ -136,6 +136,20 @@ export function ScoreDock({
   }, [dirtyToken]);
 
   useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "s") {
+        event.preventDefault();
+        if (record) void save(record);
+        return;
+      }
+      if (event.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [record]);
+
+  useEffect(() => {
     if (!menuOpen) return;
     const close = (event: MouseEvent) => {
       if (!menuRef.current?.contains(event.target as Node)) setMenuOpen(false);
@@ -205,10 +219,10 @@ export function ScoreDock({
     }
   };
 
-  const copyMarkdown = async () => {
+  const copyAs = async (format: ExportFormat) => {
     setMenuOpen(false);
     try {
-      const result = await api.exportRecord(id, "md");
+      const result = await api.exportRecord(id, format);
       await copyText(result.content);
       setStatus("saved");
     } catch (cause) {
@@ -393,7 +407,7 @@ export function ScoreDock({
           </button>
         </div>
 
-        <div className="dock__actions">
+        <div className="dock__actions dock__actions--3">
           <div className="menu" ref={menuRef}>
             <button
               type="button"
@@ -417,8 +431,11 @@ export function ScoreDock({
               </div>
             )}
           </div>
-          <button type="button" className="btn" onClick={() => void copyMarkdown()}>
+          <button type="button" className="btn" onClick={() => void copyAs("md")}>
             复制 MD
+          </button>
+          <button type="button" className="btn" onClick={() => void copyAs("json")}>
+            复制 JSON
           </button>
         </div>
       </div>
