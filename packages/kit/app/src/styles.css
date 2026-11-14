@@ -380,7 +380,7 @@ code.inline {
   background: var(--surface);
   font-size: 13.5px; line-height: 1.75;
 }
-.callout__icon { font-size: 11px; line-height: 1.95; text-align: center; font-family: var(--font-mono); }
+.callout__icon { display: flex; align-items: flex-start; justify-content: center; padding-top: 2px; }
 .callout p { margin: 4px 0; }
 .callout p:first-child { margin-top: 0; }
 .callout p:last-child { margin-bottom: 0; }
@@ -468,7 +468,7 @@ details.qa summary:hover { color: var(--zhu-deep); }
   color: var(--zhu); background: var(--zhu-bg);
   border-radius: var(--r-sm); padding: 0 5px; margin-top: 1px;
 }
-details.qa summary .chev { margin-left: auto; flex: none; color: var(--ink-3); transition: transform .2s; }
+details.qa summary .chev { display: inline-flex; align-items: center; margin-left: auto; flex: none; color: var(--ink-3); transition: transform .2s; }
 details.qa[open] summary .chev { transform: rotate(90deg); }
 .qa__body { padding: 0 16px 14px 47px; font-size: 13.5px; color: #333a42; }
 .qa__body p { margin: 7px 0; }
@@ -578,13 +578,14 @@ details.qa[open] summary .chev { transform: rotate(90deg); }
 .timer__set input:disabled { opacity: .45; }
 .timer__state { margin-left: auto; letter-spacing: .08em; text-transform: uppercase; }
 
-.dock__body { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 12px 16px 18px; }
-.dock__meta { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.dock__body { flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; padding: 12px 16px 18px; }
+.dock__meta { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; }
 .dock__meta .field:first-child { grid-column: 1 / -1; }
 
 .field { display: flex; flex-direction: column; gap: 3px; }
 .field__label { font: 400 9.5px/1.5 var(--font-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--ink-3); }
 .field input, .field select {
+  width: 100%; min-width: 0;
   height: 30px; padding: 0 8px;
   border: 1px solid var(--line-2); border-radius: var(--r-md);
   background: #fcfdfe; font-size: 12.5px;
@@ -604,7 +605,7 @@ details.qa[open] summary .chev { transform: rotate(90deg); }
 .item { padding: 8px 0 7px; border-bottom: 1px dashed #edf0f3; }
 .item:last-child { border-bottom: 0; }
 .item__row { display: flex; align-items: center; gap: 7px; }
-.item__label { flex: 1; font-size: 12.5px; color: #2b323a; }
+.item__label { flex: 1; min-width: 0; font-size: 12.5px; color: #2b323a; }
 .item__score {
   width: 48px; height: 28px; padding: 0 5px; text-align: right;
   border: 1px solid var(--line-2); border-radius: var(--r-md);
@@ -665,6 +666,8 @@ details.qa[open] summary .chev { transform: rotate(90deg); }
 .bar i[data-band="blue"] { background: var(--band-mid); }
 .bar i[data-band="gray"] { background: var(--band-junior); }
 .bar i[data-band="red"] { background: var(--band-nohire); box-shadow: 0 0 10px rgb(205 59 46 / .3); }
+/* 未评完时按临时档位着色，但降一档饱和度，和定档区分 */
+.bar i[data-provisional="true"] { filter: saturate(.55); box-shadow: none; }
 .dock__level { display: flex; align-items: center; justify-content: space-between; font: 400 10px/1 var(--font-mono); color: var(--ink-3); }
 .dock__actions { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 9px; }
 .dock__actions--3 { grid-template-columns: 1fr 1fr 1fr; }
@@ -758,7 +761,9 @@ select.chip { height: 32px; padding: 0 8px; }
 .qrow__stat { display: flex; flex-direction: column; gap: 6px; }
 .qrow__line { display: flex; align-items: center; gap: 6px; font: 400 10.5px/1.4 var(--font-mono); color: var(--ink-3); }
 .qrow__line b { color: var(--ink-2); font-weight: 500; }
-.qrow__act { display: flex; justify-content: flex-end; gap: 6px; }
+.qrow__act { display: flex; justify-content: flex-end; gap: 6px; align-items: center; }
+.qrow__arrow { color: var(--ink-3); transition: color .15s, transform .15s; }
+.qrow:hover .qrow__arrow { color: var(--zhu); transform: translateX(2px); }
 
 .records-summary { display: flex; gap: 30px; margin: 4px 0 20px; }
 .records-summary div { display: flex; flex-direction: column; gap: 3px; }
@@ -774,7 +779,7 @@ table.rtable th {
   white-space: nowrap; cursor: pointer; user-select: none;
 }
 table.rtable th:hover { color: var(--ink-2); }
-table.rtable th .sort { color: var(--accent); margin-left: 4px; }
+table.rtable th .sort { display: inline-flex; vertical-align: -2px; color: var(--accent); margin-left: 4px; }
 table.rtable td { padding: 10px 14px; border-bottom: 1px solid #eef0f3; vertical-align: middle; }
 table.rtable tr:last-child td { border-bottom: 0; }
 table.rtable tbody tr:hover td { background: #fafbfc; }
@@ -784,14 +789,16 @@ table.rtable tbody tr:hover td { background: #fafbfc; }
 .rscore { font: 500 13px/1 var(--font-mono); color: var(--ink); }
 .rscore small { font: 400 10px/1 var(--font-mono); color: var(--ink-3); }
 .racts { display: flex; justify-content: flex-end; gap: 4px; }
+.racts .btn { flex: none; white-space: nowrap; }
 
 .empty { padding: 40px 0; text-align: center; color: var(--ink-3); font-size: 12.5px; }
 .notice {
   display: flex; gap: 10px; align-items: flex-start;
   margin: 16px 0; padding: 10px 14px;
-  border-radius: var(--r-md); border: 1px solid #e7c4c0; background: var(--red-soft);
-  color: var(--red-ink); font-size: 12.5px;
+  border-radius: var(--r-md); border: 1px solid var(--danger-line); background: var(--danger-bg);
+  color: var(--danger-ink); font-size: 12.5px;
 }
+.notice > svg { flex: none; margin-top: 3px; }
 .notice code { font-size: 11.5px; }
 
 /* home */
@@ -806,7 +813,7 @@ table.rtable tbody tr:hover td { background: #fafbfc; }
 .home-body { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 48px; padding: 40px 40px 80px; max-width: 1180px; margin: 0 auto; }
 .block__head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 10px; }
 .block__title { font-size: 18px; color: var(--ink); }
-.block__more { font-size: 12px; color: var(--ink-3); background: none; border: 0; cursor: pointer; padding: 0; }
+.block__more { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; color: var(--ink-3); background: none; border: 0; cursor: pointer; padding: 0; }
 .block__more:hover { color: var(--accent); }
 
 .row-link {
@@ -879,4 +886,78 @@ body.dock-closed .dock-fab { display: inline-flex; }
   .hero__head { flex-direction: column; gap: 16px; }
   .scale__labels span:nth-child(-n+2) { display: none; }
   code.inline { white-space: normal; overflow-wrap: anywhere; }
+}
+
+/* ============================== date picker ============================== */
+.react-datepicker-wrapper,
+.react-datepicker__input-container { display: block; width: 100%; }
+
+.react-datepicker-popper { z-index: 80; padding-top: 6px; }
+
+.react-datepicker {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  color: var(--ink);
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-md);
+  box-shadow: 0 18px 40px -24px rgb(18 26 34 / .55);
+  overflow: hidden;
+}
+.react-datepicker__header {
+  background: var(--paper-soft);
+  border-bottom: 1px solid var(--line);
+  padding: 8px 0 4px;
+}
+.react-datepicker__current-month {
+  font-size: 12.5px; font-weight: 600; color: var(--ink);
+  margin-bottom: 6px;
+}
+.react-datepicker__day-name {
+  width: 26px; line-height: 22px;
+  font-size: 10px; color: var(--ink-3);
+}
+.react-datepicker__day {
+  width: 26px; line-height: 26px;
+  border-radius: var(--r-sm);
+  color: var(--ink-2);
+}
+.react-datepicker__day:hover {
+  background: var(--paper-soft); color: var(--ink);
+}
+.react-datepicker__day--selected,
+.react-datepicker__day--keyboard-selected {
+  background: var(--zhu) !important;
+  color: #fff !important;
+  font-weight: 500;
+}
+.react-datepicker__day--today { color: var(--zhu); font-weight: 600; }
+.react-datepicker__day--outside-month { color: var(--ink-3); }
+
+.react-datepicker__navigation { top: 8px; }
+.react-datepicker__navigation-icon::before { border-color: var(--ink-2); }
+.react-datepicker__triangle { display: none; }
+
+.react-datepicker__time-container {
+  border-left: 1px solid var(--line);
+  width: 74px;
+}
+.react-datepicker__time-container .react-datepicker__time { background: var(--surface); }
+.react-datepicker__time-container .react-datepicker__time-box { width: 74px; }
+.react-datepicker__time-list { padding: 0; }
+.react-datepicker__time-list-item {
+  height: auto !important;
+  padding: 5px 0 !important;
+  border-radius: 0;
+  text-align: center;
+  font-size: 11.5px;
+  color: var(--ink-2);
+}
+.react-datepicker__time-list-item:hover { background: var(--paper-soft) !important; color: var(--ink); }
+.react-datepicker__time-list-item--selected {
+  background: var(--zhu) !important;
+  color: #fff !important;
+  font-weight: 500;
+}
+.react-datepicker__today-button {
+  display: none;
 }

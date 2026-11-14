@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { ArrowDown, ArrowUp, Download, ExternalLink, Plus, Search, Trash2 } from "react-feather";
 import type { QuestionMeta, RecordSummary } from "../../../shared/types";
 import { api, download } from "../lib/api";
 import { questionHref } from "../lib/router";
@@ -65,7 +66,9 @@ export function RecordsPage({
       });
   }, [records, query, questionId, range, descending]);
 
-  const seniorPlus = records.filter((record) => record.tone === "accent").length;
+  const seniorPlus = records.filter(
+    (record) => record.tone === "green" || record.tone === "gold",
+  ).length;
   const pending = records.filter((record) => record.band === "未完成" || record.band === "—").length;
 
   const remove = async (record: RecordSummary) => {
@@ -99,7 +102,8 @@ export function RecordsPage({
           </p>
         </div>
         <button type="button" className="btn btn--primary" onClick={() => onNavigate("#/bank")}>
-          + 新建评分
+          <Plus size={13} strokeWidth={1.8} />
+          新建评分
         </button>
       </div>
 
@@ -126,10 +130,7 @@ export function RecordsPage({
 
       <div className="toolbar" style={{ marginBottom: 14 }}>
         <label className="search">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-            <circle cx="11" cy="11" r="7.5" />
-            <line x1="21" y1="21" x2="16.6" y2="16.6" />
-          </svg>
+          <Search size={13} strokeWidth={1.8} aria-hidden="true" />
           <input
             type="text"
             placeholder="搜索候选人、面试官、文件名…"
@@ -170,17 +171,24 @@ export function RecordsPage({
           <table className="rtable">
             <thead>
               <tr>
-                <th style={{ width: "22%" }}>候选人</th>
-                <th style={{ width: "26%" }}>题目</th>
+                <th style={{ width: "20%" }}>候选人</th>
+                <th style={{ width: "24%" }}>题目</th>
                 <th
-                  style={{ width: "16%" }}
+                  style={{ width: "15%" }}
                   onClick={() => setDescending((value) => !value)}
                 >
-                  面试时间 <span className="sort">{descending ? "↓" : "↑"}</span>
+                  面试时间{" "}
+                  <span className="sort">
+                    {descending ? (
+                      <ArrowDown size={11} strokeWidth={2} aria-hidden="true" />
+                    ) : (
+                      <ArrowUp size={11} strokeWidth={2} aria-hidden="true" />
+                    )}
+                  </span>
                 </th>
-                <th style={{ width: "10%" }}>总分</th>
+                <th style={{ width: "9%" }}>总分</th>
                 <th style={{ width: "11%" }}>档位</th>
-                <th style={{ width: "15%" }} />
+                <th style={{ width: "21%" }} />
               </tr>
             </thead>
             <tbody>
@@ -210,12 +218,15 @@ export function RecordsPage({
                         className="btn btn--sm"
                         onClick={() => onNavigate(questionHref(record.questionId, record.id))}
                       >
+                        <ExternalLink size={11} strokeWidth={1.8} aria-hidden="true" />
                         打开
                       </button>
                       <button type="button" className="btn btn--sm" onClick={() => void exportMd(record)}>
+                        <Download size={11} strokeWidth={1.8} aria-hidden="true" />
                         导出
                       </button>
                       <button type="button" className="btn btn--sm" onClick={() => void remove(record)}>
+                        <Trash2 size={11} strokeWidth={1.8} aria-hidden="true" />
                         删除
                       </button>
                     </div>

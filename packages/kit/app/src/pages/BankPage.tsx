@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { ArrowRight, Info, Plus, Search } from "react-feather";
 import type { QuestionMeta, RecordSummary } from "../../../shared/types";
 import { questionHref } from "../lib/router";
 import { Tag } from "../components/Tag";
@@ -55,13 +56,14 @@ export function BankPage({
           </p>
         </div>
         <button type="button" className="btn btn--primary" onClick={() => setHint((value) => !value)}>
-          + 新建题目
+          <Plus size={13} strokeWidth={1.8} />
+          新建题目
         </button>
       </div>
 
       {hint && (
         <div className="notice" style={{ background: "var(--accent-soft)", borderColor: "var(--accent-line)", color: "var(--accent-ink)" }}>
-          <span>›</span>
+          <Info size={14} strokeWidth={1.8} aria-hidden="true" />
           <span>
             在项目根目录运行 <code>npx zhumoben new-question &lt;id&gt;</code>，然后刷新页面。
             题目会出现在 <code>questions/&lt;id&gt;/</code>。
@@ -71,10 +73,7 @@ export function BankPage({
 
       <div className="toolbar">
         <label className="search">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-            <circle cx="11" cy="11" r="7.5" />
-            <line x1="21" y1="21" x2="16.6" y2="16.6" />
-          </svg>
+          <Search size={13} strokeWidth={1.8} aria-hidden="true" />
           <input
             type="text"
             placeholder="搜索题目、标签、技术栈…"
@@ -138,6 +137,7 @@ export function BankPage({
                   <span className="badge" data-tone={count > 0 ? "accent" : "gray"}>
                     {count > 0 ? `${count} 条评分` : "未评分"}
                   </span>
+                  <ArrowRight size={14} strokeWidth={1.8} className="qrow__arrow" aria-hidden="true" />
                 </div>
               </button>
             );

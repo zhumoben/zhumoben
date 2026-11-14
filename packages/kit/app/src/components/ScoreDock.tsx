@@ -1,10 +1,23 @@
 import { useEffect, useRef, useState } from "react";
+import DatePicker, { registerLocale } from "react-datepicker";
+import { format, isValid, parse } from "date-fns";
+import { zhCN } from "date-fns/locale";
+import { ChevronDown, Copy, Download, Plus, Save, X } from "react-feather";
 import type { ExportFormat, QuestionMeta, ScoreRecord } from "../../../shared/types";
 import { bandOf, clamp, emptyScores, recordIdFor, totalOf } from "../../../shared/score";
 import { api, copyText, download } from "../lib/api";
 import { currentTime, percent, today } from "../lib/format";
 import { setScoreMark } from "../lib/score-mark";
 import { Timer } from "./Timer";
+
+registerLocale("zh-CN", zhCN);
+
+const DATE_FORMAT = "yyyy-MM-dd HH:mm";
+
+function toDate(date: string, time: string): Date {
+  const parsed = parse(`${date} ${time || "00:00"}`, DATE_FORMAT, new Date());
+  return isValid(parsed) ? parsed : new Date();
+}
 
 type Status = "loading" | "idle" | "saving" | "saved" | "error";
 
@@ -178,7 +191,7 @@ export function ScoreDock({
             <h2 className="dock__title">评分表</h2>
           </div>
           <button type="button" className="dock__close" aria-label="收起" onClick={onClose}>
-            ✕
+            <X size={14} strokeWidth={1.8} />
           </button>
         </div>
         <div className="dock__body">
@@ -218,6 +231,8 @@ export function ScoreDock({
 
   const { total, filled, count, max } = totalOf(question.scorecard, record.scores);
   const band = filled === count ? bandOf(question.scorecard, total) : undefined;
+  const liveBand = filled > 0 ? bandOf(question.scorecard, total) : undefined;
+  const provisional = filled > 0 && filled < count;
   const id = savedId ?? recordIdFor(record);
 
   const doExport = async (format: ExportFormat) => {
@@ -283,14 +298,26 @@ export function ScoreDock({
           </label>
           <label className="field">
             <span className="field__label">日期 / 时间</span>
-            <input
-              value={`${record.date} / ${record.time}`}
-              onChange={(event) => {
-                const match = /^(\d{4}-\d{2}-\d{2})\s*\/\s*(\d{1,2}:\d{2})$/.exec(
-                  event.target.value.trim(),
-                );
-                if (match) patch({ date: match[1], time: match[2].padStart(5, "0") });
+            <DatePicker
+              selected={toDate(record.date, record.time)}
+              onChange={(next: Date | null) => {
+                if (!next || !isValid(next)) return;
+                patch({
+                  date: format(next, "yyyy-MM-dd"),
+                  time: format(next, "HH:mm"),
+                });
               }}
+              showTimeSelect
+              timeFormat="HH:mm"
+              timeIntervals={5}
+              timeCaption="时间"
+              dateFormat={DATE_FORMAT}
+              locale="zh-CN"
+              showPopperArrow={false}
+              popperPlacement="bottom-end"
+              popperClassName="zb-datepicker-popper"
+              calendarClassName="zb-datepicker"
+              className="date-input"
             />
           </label>
         </div>
@@ -390,7 +417,8 @@ export function ScoreDock({
         </div>
         <div className="bar">
           <i
-            data-band={band ? band.tone : "none"}
+            data-band={(band ?? liveBand)?.tone ?? "none"}
+            data-provisional={provisional ? "true" : undefined}
             style={{ width: `${percent(total, max)}%` }}
           />
         </div>
@@ -403,6 +431,7 @@ export function ScoreDock({
 
         <div className="dock__actions">
           <button type="button" className="btn btn--primary" onClick={() => void save(record)}>
+            <Save size={13} strokeWidth={1.8} />
             保存
           </button>
           <button
@@ -417,6 +446,7 @@ export function ScoreDock({
               setDirtyToken(0);
             }}
           >
+            <Plus size={13} strokeWidth={1.8} />
             新建
           </button>
         </div>
@@ -429,7 +459,8 @@ export function ScoreDock({
               style={{ width: "100%" }}
               onClick={() => setMenuOpen((open) => !open)}
             >
-              导出 ▾
+              <Download size={13} strokeWidth={1.8} />
+              导出 <ChevronDown size={12} strokeWidth={1.8} />
             </button>
             {menuOpen && (
               <div className="menu__list">
@@ -446,9 +477,11 @@ export function ScoreDock({
             )}
           </div>
           <button type="button" className="btn" onClick={() => void copyAs("md")}>
+            <Copy size={12} strokeWidth={1.8} />
             复制 MD
           </button>
           <button type="button" className="btn" onClick={() => void copyAs("json")}>
+            <Copy size={12} strokeWidth={1.8} />
             复制 JSON
           </button>
         </div>

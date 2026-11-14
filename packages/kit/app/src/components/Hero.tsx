@@ -1,3 +1,4 @@
+import { FileText, List } from "react-feather";
 import type { Band, QuestionMeta } from "../../../shared/types";
 import { questionHref } from "../lib/router";
 import { useScoreMark } from "../lib/score-mark";
@@ -85,14 +86,7 @@ export function QuestionHero({
           </div>
           <div className="spacer" />
           <button type="button" className="ghost-btn" onClick={() => onNavigate("#/bank")}>
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-              <line x1="8" y1="6" x2="21" y2="6" />
-              <line x1="8" y1="12" x2="21" y2="12" />
-              <line x1="8" y1="18" x2="21" y2="18" />
-              <line x1="3" y1="6" x2="3.01" y2="6" />
-              <line x1="3" y1="12" x2="3.01" y2="12" />
-              <line x1="3" y1="18" x2="3.01" y2="18" />
-            </svg>
+            <List size={13} strokeWidth={1.8} aria-hidden="true" />
             切换题目
           </button>
           <button
@@ -100,12 +94,7 @@ export function QuestionHero({
             className="ghost-btn"
             onClick={() => onNavigate(`#/records?question=${encodeURIComponent(question.id)}`)}
           >
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-              <polyline points="14 2 14 8 20 8" />
-              <line x1="8" y1="13" x2="16" y2="13" />
-              <line x1="8" y1="17" x2="13" y2="17" />
-            </svg>
+            <FileText size={13} strokeWidth={1.8} aria-hidden="true" />
             本题 {recordCount} 条评分
           </button>
         </div>

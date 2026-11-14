@@ -5,16 +5,17 @@ import {
   useContext,
   type ReactNode,
 } from "react";
+import { AlertTriangle, CheckCircle, ChevronRight, Info, XCircle } from "react-feather";
 import type { QuestionMeta, Scorecard } from "../../../shared/types";
 import { highlight } from "./highlight";
 
 export const QuestionContext = createContext<{ meta?: QuestionMeta }>({});
 
-const CALLOUT_ICON: Record<string, string> = {
-  info: "◆",
-  good: "✓",
-  warn: "▲",
-  bad: "✕",
+const CALLOUT_ICON = {
+  info: Info,
+  good: CheckCircle,
+  warn: AlertTriangle,
+  bad: XCircle,
 };
 
 function Callout({
@@ -24,9 +25,12 @@ function Callout({
   tone?: "info" | "good" | "warn" | "bad";
   children?: ReactNode;
 }) {
+  const Icon = CALLOUT_ICON[tone];
   return (
     <div className="callout" data-tone={tone}>
-      <span className="callout__icon">{CALLOUT_ICON[tone]}</span>
+      <span className="callout__icon">
+        <Icon size={14} strokeWidth={1.8} aria-hidden="true" />
+      </span>
       <div>{children}</div>
     </div>
   );
@@ -95,7 +99,9 @@ function Q({
       <summary>
         {label && <span className="qidx">{label}</span>}
         <span>{question}</span>
-        <span className="chev">▶</span>
+        <span className="chev">
+          <ChevronRight size={13} strokeWidth={2} aria-hidden="true" />
+        </span>
       </summary>
       <div className="qa__body">{children}</div>
     </details>
