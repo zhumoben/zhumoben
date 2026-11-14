@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { ArrowRight } from "react-feather";
 import type { QuestionMeta, RecordSummary } from "../../../shared/types";
 import { api } from "../lib/api";
 import { questionHref } from "../lib/router";
@@ -65,7 +66,8 @@ export function HomePage({
           <div className="block__head">
             <h2 className="block__title">最近评分</h2>
             <button type="button" className="block__more" onClick={() => onNavigate("#/records")}>
-              全部 {records.length} 条 →
+              全部 {records.length} 条
+              <ArrowRight size={12} strokeWidth={1.8} aria-hidden="true" />
             </button>
           </div>
 
@@ -102,7 +104,8 @@ export function HomePage({
           <div className="block__head">
             <h2 className="block__title">题库</h2>
             <button type="button" className="block__more" onClick={() => onNavigate("#/bank")}>
-              全部 {questions.length} 题 →
+              全部 {questions.length} 题
+              <ArrowRight size={12} strokeWidth={1.8} aria-hidden="true" />
             </button>
           </div>
 

@@ -7,10 +7,22 @@
   "date": "2026-11-14",
   "time": "16:10",
   "scores": {
-    "cancel": { "score": 24, "note": "AbortController 用法正确，但没提 requestId" },
-    "state": { "score": 22, "note": "错误态混在一起，取消也被画成红色" },
-    "design": { "score": null, "note": "" },
-    "detail": { "score": null, "note": "" }
+    "cancel": {
+      "score": 24,
+      "note": "AbortController 用法正确，但没提 requestId"
+    },
+    "state": {
+      "score": 22,
+      "note": "错误态混在一起，取消也被画成红色"
+    },
+    "design": {
+      "score": null,
+      "note": "ddd dsa森动"
+    },
+    "detail": {
+      "score": null,
+      "note": ""
+    }
   },
   "notes": {
     "pros": "能说清 debounce 和 abort 的区别。",
@@ -18,5 +30,5 @@
     "questions": "还没问到 StrictMode 双调用的问题。"
   },
   "createdAt": "2026-11-14T08:10:00.000Z",
-  "updatedAt": "2026-11-14T08:42:00.000Z"
+  "updatedAt": "2026-11-14T12:50:27.157Z"
 }

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Pause, Play, RotateCcw } from "react-feather";
 
 function format(seconds: number): string {
   const safe = Math.max(0, seconds);
@@ -56,31 +57,21 @@ export function Timer() {
             }}
           >
             {running ? (
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
-                <rect x="6" y="4" width="4" height="16" rx="1" />
-                <rect x="14" y="4" width="4" height="16" rx="1" />
-              </svg>
+              <Pause size={13} strokeWidth={1.8} />
             ) : (
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
-                <polygon points="7,4 20,12 7,20" />
-              </svg>
+              <Play size={13} strokeWidth={1.8} />
             )}
           </button>
           <button type="button" className="icobtn" aria-label="复位" onClick={reset}>
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9">
-              <polyline points="1 4 1 10 7 10" />
-              <path d="M3.5 15a9 9 0 1 0 2.1-9.4L1 10" />
-            </svg>
+            <RotateCcw size={13} strokeWidth={1.8} />
           </button>
         </div>
       </div>
 
       <div className="timer__bar">
         <i
-          style={{
-            width: `${total ? (remain / total) * 100 : 0}%`,
-            background: done ? "#c06a62" : undefined,
-          }}
+          data-state={remain <= 10 ? "danger" : "normal"}
+          style={{ width: `${total ? (remain / total) * 100 : 0}%` }}
         />
       </div>
 
