@@ -30,9 +30,9 @@ export function TopBar({
         }}
         style={{ color: "inherit" }}
       >
-        <span className="brand__mark">朱</span>
+        <span className="brand__mark">验</span>
         <span className="brand__name">{title}</span>
-        <span className="brand__tag">zhumoben</span>
+        <span className="brand__tag">v0.1</span>
       </a>
 
       <nav className="nav">

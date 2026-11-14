@@ -1,35 +1,45 @@
 import type { Band, QuestionMeta } from "../../../shared/types";
 import { questionHref } from "../lib/router";
+import { useScoreMark } from "../lib/score-mark";
 import { Tag } from "./Tag";
 
 const TONE_BG: Record<Band["tone"], string> = {
-  red: "#8d4a44",
-  gray: "#5a6672",
-  amber: "#a8813f",
-  accent: "#5d8aa6",
+  gold: "linear-gradient(90deg, var(--band-strong), var(--band-strong-2))",
+  green: "var(--band-senior)",
+  purple: "var(--band-doubt)",
+  blue: "var(--band-mid)",
+  gray: "var(--band-junior)",
+  red: "var(--band-nohire)",
+  amber: "var(--color-tone-amber-line)",
+  accent: "var(--accent)",
 };
 
 export function Scale({ bands, max }: { bands: Band[]; max: number }) {
   const sorted = [...bands].sort((a, b) => a.min - b.min);
+  const mark = useScoreMark();
+  const pct = mark ? Math.min(100, Math.round((mark.total / (mark.max || 1)) * 100)) : 0;
+
   return (
     <div className="scale">
       <div className="scale__head">
         <span>评分档位</span>
-        <span>0 — {max}</span>
+        <span className={`now${mark ? " is-live" : ""}`}>
+          {mark ? `当前 ${mark.total} / ${mark.max}` : `0 — ${max}`}
+        </span>
       </div>
       <div className="scale__bar">
-        {sorted.map((band, index) => (
+        {sorted.map((band) => (
           <i
             key={band.label}
             style={{
               flex: band.max - band.min + 1,
-              background:
-                index === sorted.length - 1 && band.tone === "accent"
-                  ? "#86b3cc"
-                  : TONE_BG[band.tone],
+              background: TONE_BG[band.tone],
+              boxShadow:
+                band.tone === "gold" ? "0 0 12px rgb(220 192 106 / .42)" : undefined,
             }}
           />
         ))}
+        {mark && <span className="scale__needle" style={{ left: `${pct}%` }} />}
       </div>
       <div className="scale__labels">
         {sorted.map((band) => (

@@ -46,10 +46,11 @@
     }
   ],
   "bands": [
-    { "min": 90, "max": 100, "label": "Strong Senior", "tone": "accent" },
-    { "min": 80, "max": 89, "label": "Senior", "tone": "accent" },
-    { "min": 65, "max": 79, "label": "Senior 存疑", "tone": "amber" },
-    { "min": 50, "max": 64, "label": "Mid", "tone": "gray" },
+    { "min": 90, "max": 100, "label": "Strong Senior", "tone": "gold" },
+    { "min": 80, "max": 89, "label": "Senior", "tone": "green" },
+    { "min": 70, "max": 79, "label": "Senior 存疑", "tone": "purple" },
+    { "min": 60, "max": 69, "label": "Mid", "tone": "blue" },
+    { "min": 50, "max": 59, "label": "Junior", "tone": "gray" },
     { "min": 0, "max": 49, "label": "No Hire", "tone": "red" }
   ]
 }

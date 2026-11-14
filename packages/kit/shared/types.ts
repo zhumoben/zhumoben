@@ -1,6 +1,14 @@
 /** Shared between the browser app and the node side. No runtime imports. */
 
-export type Tone = "accent" | "amber" | "gray" | "red";
+export type Tone =
+  | "accent"
+  | "gold"
+  | "green"
+  | "purple"
+  | "blue"
+  | "amber"
+  | "gray"
+  | "red";
 
 export interface ScoreItem {
   id: string;

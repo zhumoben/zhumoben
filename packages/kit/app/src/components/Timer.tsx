@@ -77,10 +77,8 @@ export function Timer() {
 
       <div className="timer__bar">
         <i
-          style={{
-            width: `${total ? (remain / total) * 100 : 0}%`,
-            background: done ? "#c06a62" : undefined,
-          }}
+          data-state={remain <= 10 ? "danger" : "normal"}
+          style={{ width: `${total ? (remain / total) * 100 : 0}%` }}
         />
       </div>
 

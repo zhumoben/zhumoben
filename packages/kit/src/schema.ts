@@ -1,7 +1,16 @@
 import { z } from "zod";
 import type { Scorecard } from "../shared/types.js";
 
-const toneSchema = z.enum(["accent", "amber", "gray", "red"]);
+const toneSchema = z.enum([
+  "accent",
+  "gold",
+  "green",
+  "purple",
+  "blue",
+  "amber",
+  "gray",
+  "red",
+]);
 
 export const scoreItemSchema = z.object({
   id: z.string().min(1),

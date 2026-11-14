@@ -3,6 +3,7 @@ import type { ExportFormat, QuestionMeta, ScoreRecord } from "../../../shared/ty
 import { bandOf, clamp, emptyScores, recordIdFor, totalOf } from "../../../shared/score";
 import { api, copyText, download } from "../lib/api";
 import { currentTime, percent, today } from "../lib/format";
+import { setScoreMark } from "../lib/score-mark";
 import { Timer } from "./Timer";
 
 type Status = "loading" | "idle" | "saving" | "saved" | "error";
@@ -157,6 +158,16 @@ export function ScoreDock({
     document.addEventListener("mousedown", close);
     return () => document.removeEventListener("mousedown", close);
   }, [menuOpen]);
+
+  const live = record ? totalOf(question.scorecard, record.scores) : null;
+
+  useEffect(() => {
+    setScoreMark(
+      live && live.filled > 0 ? { total: live.total, max: live.max } : null,
+    );
+  }, [live?.total, live?.max, live?.filled]);
+
+  useEffect(() => () => setScoreMark(null), []);
 
   if (!record) {
     return (
@@ -378,7 +389,10 @@ export function ScoreDock({
           </span>
         </div>
         <div className="bar">
-          <i style={{ width: `${percent(total, max)}%` }} />
+          <i
+            data-band={band ? band.tone : "none"}
+            style={{ width: `${percent(total, max)}%` }}
+          />
         </div>
         <div className="dock__level">
           <span className="badge" data-tone={band?.tone ?? "amber"}>
