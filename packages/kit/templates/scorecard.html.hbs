@@ -4,14 +4,25 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>{{question.title}} · {{record.candidate}} · 评分报告</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="preconnect" href="https://fontsapi.zeoseven.com" crossorigin />
+<link
+  href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Cascadia+Code:wght@200..700&family=Castoro:ital@0;1&display=swap"
+  rel="stylesheet"
+/>
+<!-- 寒蝉锦书宋（serif CJK） -->
+<link rel="stylesheet" href="https://fontsapi.zeoseven.com/2246/main/result.css" />
+<!-- Sarasa Mono SC（等宽 CJK） -->
+<link rel="stylesheet" href="https://fontsapi.zeoseven.com/159/main/result.css" />
 <style>
   :root {
     --paper: #f2f3f5; --card: #fff; --ink: #15181c; --ink-2: #4f5862; --ink-3: #8b939d;
     --line: #e3e6ea; --accent: #46647a; --accent-deep: #2e4657; --accent-soft: #e6edf2;
     --amber: #b07d2e; --amber-bg: #f7efdf; --red: #a2413a; --red-bg: #f7e7e5;
-    --serif: "Castoro", "Songti SC", "Noto Serif SC", Georgia, serif;
-    --sans: "Inter", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
-    --mono: "Cascadia Code", "Sarasa Mono SC", ui-monospace, Consolas, monospace;
+    --serif: "Castoro", "寒蝉锦书宋Pro", "Songti SC", "Noto Serif SC", Georgia, serif;
+    --sans: "Inter", "PingFang SC", "Noto Sans SC", "Microsoft YaHei", system-ui, sans-serif;
+    --mono: "Sarasa Mono SC", "Cascadia Code", "JetBrains Mono", ui-monospace, Consolas, monospace;
   }
   * { box-sizing: border-box; }
   body { margin: 0; background: var(--paper); color: var(--ink); font: 14px/1.7 var(--sans); }
