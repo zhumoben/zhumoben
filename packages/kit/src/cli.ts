@@ -12,11 +12,16 @@ import { zhumoben } from "./plugin.js";
 const pkgRoot = fileURLToPath(new URL("..", import.meta.url));
 const appRoot = path.join(pkgRoot, "app");
 
+/** Port of the packaged/release build. */
+export const RELEASE_PORT = 5900;
+/** Port used by the dev server. */
+export const DEV_PORT = 5901;
+
 const HELP = `
 zhumoben — local-first interview question bank and scorecard
 
 Usage:
-  zhumoben dev [--port 5173] [--open]
+  zhumoben dev [--port 5901] [--open]
   zhumoben init
   zhumoben new-question <id>
 
@@ -91,7 +96,7 @@ async function dev(cwd: string, args: string[]): Promise<void> {
 
   const portFlag = args.indexOf("--port");
   const port =
-    portFlag >= 0 ? Number(args[portFlag + 1]) : (config.port ?? 5173);
+    portFlag >= 0 ? Number(args[portFlag + 1]) : (config.devPort ?? DEV_PORT);
   const open = args.includes("--open") || config.open === true;
 
   const server = await createServer({
@@ -111,6 +116,8 @@ async function dev(cwd: string, args: string[]): Promise<void> {
   server.printUrls();
   console.log(
     `\n  zhumoben · ${config.title ?? "Interview Kit"}\n` +
+      `  dev     http://localhost:${port}\n` +
+      `  release :${config.port ?? RELEASE_PORT}\n` +
       `  data    ${cwd}\n` +
       `  questions ${ids.length}\n`,
   );
@@ -128,7 +135,8 @@ async function init(cwd: string): Promise<void> {
       configFile,
       `export default {
   title: "Interview Kit",
-  port: 5173,
+  port: 5900,
+  devPort: 5901,
   // tags: { react: { color: "accent" } },
 };\n`,
       "utf8",

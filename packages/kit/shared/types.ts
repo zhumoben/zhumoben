@@ -103,7 +103,10 @@ export type ExportFormat = "json" | "md" | "html";
 export interface KitConfig {
   title?: string;
   description?: string;
+  /** Port of the packaged/release build. */
   port?: number;
+  /** Port used by `zhumoben dev`. Defaults to 5901. */
+  devPort?: number;
   open?: boolean;
   tags?: Record<string, { color?: string; label?: string }>;
   templatesDir?: string;

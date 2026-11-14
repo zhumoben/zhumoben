@@ -40,8 +40,10 @@ npx zhumoben init      # writes questions/, records/, kit.config.ts
 npx zhumoben dev
 ```
 
-`zhumoben dev` starts a local server at http://localhost:5173 and reads the
-question bank from the current working directory. Nothing is uploaded.
+`zhumoben dev` starts a local server at http://localhost:5901 and reads the
+question bank from the current working directory. Nothing is uploaded. The
+packaged build will serve on port `5900`; both can be overridden with
+`--port` or `kit.config.ts` (`devPort` / `port`).
 
 ## Data layout
 
