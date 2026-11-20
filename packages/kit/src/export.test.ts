@@ -86,6 +86,24 @@ describe("export templates", () => {
     expect(out.content).toMatch(/\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} UTC[+-]\d{2}:\d{2}/);
   });
 
+  it("renders notes as markdown in html and keeps raw markdown in md", () => {
+    const withMarkdown: ScoreRecord = {
+      ...record,
+      scores: { render: { score: 86, note: "**一次 map**\n\n- 缺少缓存\n- 未处理卸载" } },
+      notes: { pros: "**结构清晰**", cons: "- 缺少校验", questions: "`tsc` 跑过吗" },
+    };
+
+    const html = renderExport("html", withMarkdown, question, tempDir());
+    expect(html.content).toContain("<strong>一次 map</strong>");
+    expect(html.content).toContain("<li>缺少缓存</li>");
+    expect(html.content).toContain("<strong>结构清晰</strong>");
+    expect(html.content).toContain("<code>tsc</code>");
+
+    const md = renderExport("md", withMarkdown, question, tempDir());
+    expect(md.content).toContain("**一次 map**");
+    expect(md.content).not.toContain("<strong>");
+  });
+
   it("lets a consumer override a template", () => {
     const cwd = tempDir();
     fs.mkdirSync(path.join(cwd, "templates"), { recursive: true });

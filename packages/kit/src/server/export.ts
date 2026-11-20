@@ -5,6 +5,7 @@ import Handlebars from "handlebars";
 import { PRODUCT_HOMEPAGE, PRODUCT_NAME } from "../../shared/brand.js";
 import { bandOf, recordIdFor, totalOf } from "../../shared/score.js";
 import type { ExportFormat, ScoreRecord } from "../../shared/types.js";
+import { renderNoteMarkdown } from "./markdown.js";
 import type { LoadedQuestion } from "./questions.js";
 
 /** `dist/cli.js` -> `../templates`, `src/server/export.ts` -> `../../templates`. */
@@ -90,13 +91,28 @@ export function renderExport(
 
   const dimensionWidth = labelColumnWidth([...rows.map((row) => row.label), "维度"]);
 
+  const isHtml = format === "html";
+  const viewRows = isHtml
+    ? rows.map((row) => ({ ...row, note: renderNoteMarkdown(row.note) }))
+    : rows;
+  const viewRecord = isHtml
+    ? {
+        ...record,
+        notes: {
+          pros: renderNoteMarkdown(record.notes.pros),
+          cons: renderNoteMarkdown(record.notes.cons),
+          questions: renderNoteMarkdown(record.notes.questions),
+        },
+      }
+    : record;
+
   const content = template({
-    record,
+    record: viewRecord,
     question: { ...question.frontmatter, id: question.id },
     product: PRODUCT_NAME,
     homepage: PRODUCT_HOMEPAGE,
     groups: card.groups,
-    rows,
+    rows: viewRows,
     dimensionWidth,
     total,
     max,
