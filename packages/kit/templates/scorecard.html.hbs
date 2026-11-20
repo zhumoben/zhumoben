@@ -56,6 +56,7 @@
   td { padding: 10px 12px; border-bottom: 1px solid #eef0f3; vertical-align: top; }
   tr:last-child td { border-bottom: 0; }
   .num { font-family: var(--mono); text-align: right; font-variant-numeric: tabular-nums; }
+  .col-dim { overflow-wrap: anywhere; }
   .note { color: var(--ink-2); font-size: 12px; }
   .badge { display: inline-block; padding: 1px 7px; border-radius: 4px; font-size: 11px; font-weight: 500; }
   .badge-accent { background: var(--accent-soft); color: var(--accent-deep); }
@@ -103,12 +104,12 @@
   <h2>评分明细</h2>
   <table>
     <thead>
-      <tr><th style="width:40%">维度</th><th style="width:12%" class="num">得分</th><th style="width:10%" class="num">满分</th><th>备注</th></tr>
+      <tr><th class="col-dim" style="width:min({{dimensionWidth}}px, 40%)">维度</th><th style="width:12%" class="num">得分</th><th style="width:10%" class="num">满分</th><th>备注</th></tr>
     </thead>
     <tbody>
       {{#each rows}}
       <tr>
-        <td>{{label}}</td>
+        <td class="col-dim">{{label}}</td>
         <td class="num">{{#if score}}{{score}}{{else}}—{{/if}}</td>
         <td class="num">{{max}}</td>
         <td class="note">{{note}}</td>

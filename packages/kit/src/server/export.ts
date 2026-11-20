@@ -37,6 +37,19 @@ export interface ExportResult {
   mime: string;
 }
 
+/** Approximate rendered width (px) of a label at the table's 13px size, plus cell padding. */
+export function labelColumnWidth(labels: string[]): number {
+  const padding = 26;
+  const widest = Math.max(0, ...labels.map((label) => {
+    let width = 0;
+    for (const char of label) {
+      width += (char.codePointAt(0) ?? 0) > 0xff ? 13 : 7;
+    }
+    return width;
+  }));
+  return Math.ceil(widest + padding);
+}
+
 export function renderExport(
   format: ExportFormat,
   record: ScoreRecord,
@@ -75,6 +88,8 @@ export function renderExport(
     })),
   );
 
+  const dimensionWidth = labelColumnWidth([...rows.map((row) => row.label), "维度"]);
+
   const content = template({
     record,
     question: { ...question.frontmatter, id: question.id },
@@ -82,6 +97,7 @@ export function renderExport(
     homepage: PRODUCT_HOMEPAGE,
     groups: card.groups,
     rows,
+    dimensionWidth,
     total,
     max,
     filled,
