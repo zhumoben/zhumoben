@@ -56,7 +56,7 @@ packaged build will serve on port `5900`; both can be overridden with
 my-interviews/
 ├─ kit.config.ts            # title, port, optional tag colours
 ├─ questions/
-│  └─ dynamic-form/
+│  └─ async-scheduler/
 │     ├─ question.mdx       # frontmatter + MDX body
 │     └─ scorecard.json     # groups, items, weights, bands
 └─ records/
@@ -68,15 +68,15 @@ my-interviews/
 
 ```mdx
 ---
-title: 动态表单题
-subtitle: Senior 级评分与追问手册
-level: L4
-levelLabel: Senior
+title: 异步任务调度器
+subtitle: 并发控制与 Promise 队列
+level: L3
+levelLabel: 中级
 duration: 30 min
-stack: React 19 · TypeScript 5
-format: 现场 / 共享编辑器
-tags: [react, typescript, live-coding]
-summary: 一道 30 分钟的 React + TypeScript live coding 题。
+stack: JavaScript · TypeScript 5
+format: 现场 / 在线笔试
+tags: [javascript, typescript, promise]
+summary: 30 分钟实现一个并发上限为 2 的异步调度器。
 ---
 
 ## 评定框架
@@ -84,7 +84,7 @@ summary: 一道 30 分钟的 React + TypeScript live coding 题。
 正文用 Markdown；需要版式时用内置组件：
 
 <Callout tone="info">
-  **核心判据：**他是否把这道题当成一个会被别人修改的组件来设计。
+  **核心判据**：他是否理解「同时运行的任务数量」和「每批任务数量」的区别。
 </Callout>
 
 <Duo>
@@ -107,7 +107,7 @@ summary: 一道 30 分钟的 React + TypeScript live coding 题。
       "id": "core",
       "title": "核心实现",
       "items": [
-        { "id": "render", "label": "动态渲染与受控", "max": 20, "fullCredit": "…" }
+        { "id": "window", "label": "并发窗口", "max": 30, "fullCredit": "…" }
       ]
     }
   ],

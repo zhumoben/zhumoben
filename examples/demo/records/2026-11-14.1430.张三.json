@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
-  "questionId": "dynamic-form",
-  "questionTitle": "动态表单题",
+  "questionId": "async-scheduler",
+  "questionTitle": "异步任务调度器",
   "candidate": "张三",
   "interviewer": "李四",
   "date": "2026-11-14",
   "time": "14:30",
   "scores": {
-    "render": { "score": 18, "note": "一次 map，key 用 name；number 空值处理正确" },
-    "state": { "score": 26, "note": "单一 values + 不可变合并；fields 变化只对账 key" },
-    "types": { "score": 26, "note": "判别联合 + never 穷尽检查；缺少运行时校验" },
-    "robust": { "score": 10, "note": "未知 type 有兜底；重复 name 没交代" },
-    "detail": { "score": 6, "note": "label 绑定正确；没提 aria-describedby" }
+    "window": { "score": 27, "note": "任意时刻最多 2 个；任务完成立即补位，没有分批等待" },
+    "queue": { "score": 18, "note": "FIFO；2 完成后启动 3，3 完成后启动 4" },
+    "promise": { "score": 17, "note": "add 返回 Promise；结果和异常都能传出去" },
+    "robust": { "score": 12, "note": "失败也释放槽位；limit 校验做了，同步异常没单独测" },
+    "types": { "score": 12, "note": "泛型返回类型正确；没有 any" }
   },
   "notes": {
-    "pros": "判别联合建模、状态合并一次写对，自己发现了题面缺 options。",
-    "cons": "类型只在编译期兜底，没有提出后端 JSON 需要运行时校验。",
-    "questions": "如果再给半小时，会先补 zod 还是先拆 renderControl？"
+    "pros": "并发窗口和时间线讲得很清楚，先画了 0 / 500 / 800 / 1000 / 1200ms 的图。",
+    "cons": "没有主动验证任务 reject 后队列是否继续，靠 finally 的写法兜住了。",
+    "questions": "如果并发数运行中要调整，队列里的任务怎么处理？"
   },
   "createdAt": "2026-11-14T06:30:00.000Z",
-  "updatedAt": "2026-11-14T07:12:00.000Z"
+  "updatedAt": "2026-11-21T03:30:00.000Z"
 }
