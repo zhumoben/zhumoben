@@ -104,14 +104,15 @@ describe("export templates", () => {
     expect(md.content).not.toContain("<strong>");
   });
 
-  it("keeps multi-line notes on one row in markdown tables", () => {
+  it("flattens multi-line notes into one markdown table cell", () => {
     const withLines: ScoreRecord = {
       ...record,
-      scores: { render: { score: 86, note: "第一行\n第二行 | 带竖线" } },
+      scores: { render: { score: 86, note: "第一行\n第二行 | 带竖线\n- 列表项" } },
     };
 
     const md = renderExport("md", withLines, question, tempDir());
-    expect(md.content).toContain("| 动态渲染 | 86 | 100 | 第一行<br>第二行 \\| 带竖线 |");
+    expect(md.content).toContain("| 动态渲染 | 86 | 100 | 第一行 第二行 \\| 带竖线 列表项 |");
+    expect(md.content).not.toContain("<br>");
   });
 
   it("lets a consumer override a template", () => {

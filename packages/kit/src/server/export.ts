@@ -51,13 +51,22 @@ export function labelColumnWidth(labels: string[]): number {
   return Math.ceil(widest + padding);
 }
 
-/** Keep a Markdown table cell on one line: escape pipes and turn newlines into `<br>`. */
+/** Keep a Markdown table cell on one line, flattening block syntax so any renderer accepts it. */
 export function markdownTableCell(text: string): string {
   return text
-    .trimEnd()
     .split(/\r?\n/)
-    .map((line) => line.replace(/\|/g, "\\|"))
-    .join("<br>");
+    .map((line) =>
+      line
+        .trim()
+        .replace(/^#{1,6}\s+/, "")
+        .replace(/^>\s?/, "")
+        .replace(/^[-*+]\s+/, "")
+        .replace(/^(`{3,}|~{3,}).*$/, ""),
+    )
+    .filter(Boolean)
+    .join(" ")
+    .replace(/\s+/g, " ")
+    .replace(/\|/g, "\\|");
 }
 
 export function renderExport(
