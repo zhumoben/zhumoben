@@ -65,7 +65,7 @@ describe("export templates", () => {
     expect(out.mime).toBe("text/markdown");
     expect(out.content).toContain("# 演示题 · 张三");
     expect(out.content).toContain("86 / 100");
-    expect(out.content).toContain("### 📌 动态渲染 (86/100)");
+    expect(out.content).toContain("### 📌 动态渲染 `(86/100)`");
     expect(out.content).toContain("## 📊 评分明细");
     expect(out.content).not.toContain("| ---");
     expect(out.content).toContain("结构清晰");
