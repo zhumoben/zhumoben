@@ -104,6 +104,16 @@ describe("export templates", () => {
     expect(md.content).not.toContain("<strong>");
   });
 
+  it("keeps multi-line notes on one row in markdown tables", () => {
+    const withLines: ScoreRecord = {
+      ...record,
+      scores: { render: { score: 86, note: "第一行\n第二行 | 带竖线" } },
+    };
+
+    const md = renderExport("md", withLines, question, tempDir());
+    expect(md.content).toContain("| 动态渲染 | 86 | 100 | 第一行<br>第二行 \\| 带竖线 |");
+  });
+
   it("lets a consumer override a template", () => {
     const cwd = tempDir();
     fs.mkdirSync(path.join(cwd, "templates"), { recursive: true });

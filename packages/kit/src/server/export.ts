@@ -51,6 +51,15 @@ export function labelColumnWidth(labels: string[]): number {
   return Math.ceil(widest + padding);
 }
 
+/** Keep a Markdown table cell on one line: escape pipes and turn newlines into `<br>`. */
+export function markdownTableCell(text: string): string {
+  return text
+    .trimEnd()
+    .split(/\r?\n/)
+    .map((line) => line.replace(/\|/g, "\\|"))
+    .join("<br>");
+}
+
 export function renderExport(
   format: ExportFormat,
   record: ScoreRecord,
@@ -94,7 +103,13 @@ export function renderExport(
   const isHtml = format === "html";
   const viewRows = isHtml
     ? rows.map((row) => ({ ...row, note: renderNoteMarkdown(row.note) }))
-    : rows;
+    : format === "md"
+      ? rows.map((row) => ({
+          ...row,
+          label: markdownTableCell(row.label),
+          note: markdownTableCell(row.note),
+        }))
+      : rows;
   const viewRecord = isHtml
     ? {
         ...record,
