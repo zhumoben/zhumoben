@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import Handlebars from "handlebars";
+import { PRODUCT_HOMEPAGE, PRODUCT_NAME } from "../../shared/brand.js";
 import { bandOf, recordIdFor, totalOf } from "../../shared/score.js";
 import type { ExportFormat, ScoreRecord } from "../../shared/types.js";
 import type { LoadedQuestion } from "./questions.js";
@@ -16,6 +17,19 @@ function resolveTemplateRoot(): string {
 }
 
 const TEMPLATE_ROOT = resolveTemplateRoot();
+
+/** Local wall-clock time with its UTC offset, e.g. `2026-11-21 14:30:05 UTC+08:00`. */
+export function formatLocalTimestamp(date: Date): string {
+  const pad = (value: number) => String(value).padStart(2, "0");
+  const offset = -date.getTimezoneOffset();
+  const sign = offset >= 0 ? "+" : "-";
+  const abs = Math.abs(offset);
+  const zone = `UTC${sign}${pad(Math.floor(abs / 60))}:${pad(abs % 60)}`;
+  return (
+    `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ` +
+    `${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())} ${zone}`
+  );
+}
 
 export interface ExportResult {
   filename: string;
@@ -64,6 +78,8 @@ export function renderExport(
   const content = template({
     record,
     question: { ...question.frontmatter, id: question.id },
+    product: PRODUCT_NAME,
+    homepage: PRODUCT_HOMEPAGE,
     groups: card.groups,
     rows,
     total,
@@ -74,7 +90,7 @@ export function renderExport(
     band: band?.label ?? "—",
     tone: band?.tone ?? "gray",
     id,
-    generatedAt: new Date().toISOString(),
+    generatedAt: formatLocalTimestamp(new Date()),
   });
 
   return {

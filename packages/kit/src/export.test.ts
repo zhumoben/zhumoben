@@ -60,6 +60,9 @@ describe("export templates", () => {
     expect(out.content).toContain("86 / 100");
     expect(out.content).toContain("| 动态渲染 | 86 | 100 |"); 
     expect(out.content).toContain("结构清晰");
+    expect(out.content).toContain("[朱墨本](https://github.com/zhumoben/zhumoben)");
+    expect(out.content).not.toContain("记录文件");
+    expect(out.content).toMatch(/\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} UTC[+-]\d{2}:\d{2}/);
   });
 
   it("renders the built-in html template with the score", () => {
@@ -68,6 +71,10 @@ describe("export templates", () => {
     expect(out.content).toContain("<!doctype html>");
     expect(out.content).toContain("86");
     expect(out.content).toContain("动态渲染");
+    expect(out.content).toContain("朱墨本");
+    expect(out.content).toContain('href="https://github.com/zhumoben/zhumoben"');
+    expect(out.content).toContain('target="_blank"');
+    expect(out.content).toMatch(/\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} UTC[+-]\d{2}:\d{2}/);
   });
 
   it("lets a consumer override a template", () => {
