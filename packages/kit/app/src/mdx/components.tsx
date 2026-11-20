@@ -3,9 +3,20 @@ import {
   createContext,
   isValidElement,
   useContext,
+  useEffect,
+  useRef,
+  useState,
   type ReactNode,
 } from "react";
-import { AlertTriangle, CheckCircle, ChevronRight, Info, XCircle } from "react-feather";
+import {
+  AlertTriangle,
+  Check,
+  CheckCircle,
+  ChevronRight,
+  Copy,
+  Info,
+  XCircle,
+} from "react-feather";
 import type { QuestionMeta, Scorecard } from "../../../shared/types";
 import { highlight } from "./highlight";
 
@@ -105,6 +116,108 @@ function Q({
       </summary>
       <div className="qa__body">{children}</div>
     </details>
+  );
+}
+
+/** 把渲染后的题目节点转成带内联样式的 HTML，粘贴到文档工具时保留格式。 */
+function clipboardHtml(node: HTMLElement): string {
+  const clone = node.cloneNode(true) as HTMLElement;
+
+  clone.querySelectorAll("code").forEach((element) => {
+    const code = element as HTMLElement;
+    code.style.fontFamily =
+      "ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace";
+    code.style.fontSize = "12.5px";
+    code.style.background = "#f2f3f5";
+    code.style.color = "#3b4a5a";
+    code.style.padding = "1px 4px";
+    code.style.borderRadius = "4px";
+  });
+
+  clone.querySelectorAll("a").forEach((element) => {
+    (element as HTMLElement).style.color = "#45657a";
+  });
+
+  const wrapper =
+    "font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto," +
+    "'PingFang SC','Microsoft YaHei',sans-serif;font-size:14px;line-height:1.75;color:#2b323a";
+
+  return `<div style="${wrapper}">${clone.innerHTML}</div>`;
+}
+
+/** 不支持 Clipboard API 时的兜底：选中节点后走 execCommand。 */
+function copySelection(node: HTMLElement): boolean {
+  const range = document.createRange();
+  range.selectNodeContents(node);
+  const selection = window.getSelection();
+  if (!selection) return false;
+
+  selection.removeAllRanges();
+  selection.addRange(range);
+  const copied = document.execCommand("copy");
+  selection.removeAllRanges();
+  return copied;
+}
+
+function QuestionCard({ children }: { children?: ReactNode }) {
+  const bodyRef = useRef<HTMLDivElement>(null);
+  const timerRef = useRef<number | undefined>(undefined);
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    return () => {
+      if (timerRef.current !== undefined) window.clearTimeout(timerRef.current);
+    };
+  }, []);
+
+  const flash = () => {
+    setCopied(true);
+    if (timerRef.current !== undefined) window.clearTimeout(timerRef.current);
+    timerRef.current = window.setTimeout(() => setCopied(false), 1800);
+  };
+
+  const handleCopy = async () => {
+    const body = bodyRef.current;
+    if (!body) return;
+
+    const text = body.innerText.trim();
+
+    try {
+      if (navigator.clipboard?.write && typeof ClipboardItem !== "undefined") {
+        await navigator.clipboard.write([
+          new ClipboardItem({
+            "text/html": new Blob([clipboardHtml(body)], { type: "text/html" }),
+            "text/plain": new Blob([text], { type: "text/plain" }),
+          }),
+        ]);
+      } else if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(text);
+      } else if (!copySelection(body)) {
+        return;
+      }
+      flash();
+    } catch {
+      if (copySelection(body)) flash();
+    }
+  };
+
+  return (
+    <div className="qcard">
+      <div className="qcard__bar">
+        <span className="qcard__label">题目原文</span>
+        <button type="button" className="btn btn--sm qcard__copy" onClick={handleCopy}>
+          {copied ? (
+            <Check size={12} strokeWidth={2} aria-hidden="true" />
+          ) : (
+            <Copy size={12} strokeWidth={1.8} aria-hidden="true" />
+          )}
+          {copied ? "已复制" : "复制题目"}
+        </button>
+      </div>
+      <div className="qcard__body" ref={bodyRef}>
+        {children}
+      </div>
+    </div>
   );
 }
 
@@ -211,5 +324,6 @@ export const mdxComponents: Record<string, any> = {
   Step,
   Checklist,
   Q,
+  QuestionCard,
   Rubric,
 };
