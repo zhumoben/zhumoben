@@ -1,4 +1,5 @@
-import { BookOpen, FileText, Home } from "react-feather";
+import { BookOpen, FileText, GitHub, Home } from "react-feather";
+import { PRODUCT_HOMEPAGE } from "../../../shared/brand";
 import type { Route } from "../lib/router";
 
 const ITEMS: Array<{
@@ -72,6 +73,16 @@ export function TopBar({
           <i />
           本地 · {saved ?? "自动保存"}
         </span>
+        <a
+          className="repo-link"
+          href={PRODUCT_HOMEPAGE}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="GitHub 仓库"
+          title="GitHub 仓库"
+        >
+          <GitHub size={16} strokeWidth={1.8} aria-hidden="true" />
+        </a>
       </div>
     </header>
   );

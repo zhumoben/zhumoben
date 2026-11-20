@@ -1,38 +1,33 @@
 # {{question.title}} · {{record.candidate}}
 
-> 面试评分报告 · 由 zhumoben 生成于 {{generatedAt}}
+> 面试评分报告 · 由 [{{product}}]({{homepage}}) 生成于 {{generatedAt}}
 
-| 项目 | 内容 |
-| --- | --- |
-| 候选人 | {{record.candidate}} |
-| 面试官 | {{record.interviewer}} |
-| 时间 | {{record.date}} {{record.time}} |
-| 总分 | {{total}} / {{max}} |
-| 档位 | {{band}} |
-| 已评 | {{filled}} / {{count}} 项 |
+- 候选人：{{record.candidate}}
+- 面试官：{{record.interviewer}}
+- 时间：{{record.date}} {{record.time}}
+- 总分：{{total}} / {{max}} · {{band}}
+- 已评：{{filled}} / {{count}} 项
 
-## 评分明细
+## 📊 评分明细
 
-| 维度 | 得分 | 满分 | 备注 |
-| --- | ---: | ---: | --- |
 {{#each rows}}
-| {{label}} | {{#if score}}{{score}}{{else}}—{{/if}} | {{max}} | {{note}} |
+### 📌 {{label}} `({{#if hasScore}}{{score}}{{else}}—{{/if}}/{{max}})`
+{{#if note}}
+
+{{note}}
+{{/if}}
+
 {{/each}}
+## 📝 面试笔记
 
-## 面试笔记
-
-### Pro · 做得好 / 加分点
+### ✅ Pro · 做得好 / 加分点
 
 {{#if record.notes.pros}}{{record.notes.pros}}{{else}}_（未填写）_{{/if}}
 
-### Con · 问题 / 扣分依据
+### ⚠️ Con · 问题 / 扣分依据
 
 {{#if record.notes.cons}}{{record.notes.cons}}{{else}}_（未填写）_{{/if}}
 
-### Q · 待追问 / 存疑
+### ❓ Q · 待追问 / 存疑
 
 {{#if record.notes.questions}}{{record.notes.questions}}{{else}}_（未填写）_{{/if}}
-
----
-
-记录文件：`{{id}}.json`

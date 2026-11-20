@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { questions as questionEntries } from "virtual:zhumoben/questions";
 import { config } from "virtual:zhumoben/config";
+import { PRODUCT_NAME } from "../../shared/brand";
 import type { RecordSummary } from "../../shared/types";
 import { TopBar } from "./components/TopBar";
 import { ScoreDock } from "./components/ScoreDock";
@@ -24,7 +25,7 @@ export function App() {
   const showDock = route.name === "question" && Boolean(entry) && !dockClosed;
 
   useEffect(() => {
-    document.title = config.title ?? "zhumoben";
+    document.title = config.title ?? PRODUCT_NAME;
   }, []);
 
   useEffect(() => {
@@ -50,7 +51,7 @@ export function App() {
 
   return (
     <>
-      <TopBar route={route} onNavigate={navigate} title={config.title ?? "朱墨本"} />
+      <TopBar route={route} onNavigate={navigate} title={config.title ?? PRODUCT_NAME} />
 
       <div className={`app${showDock ? " has-dock" : ""}`}>
         {route.name === "home" && <HomePage questions={metas} onNavigate={navigate} />}

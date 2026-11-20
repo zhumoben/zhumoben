@@ -2,7 +2,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { renderExport } from "./server/export.js";
+import { renderExport, labelColumnWidth } from "./server/export.js";
 import type { LoadedQuestion } from "./server/questions.js";
 import type { ScoreRecord, Scorecard } from "../shared/types.js";
 
@@ -52,14 +52,26 @@ function tempDir(): string {
 }
 
 describe("export templates", () => {
+  it("sizes the dimension column from its longest label", () => {
+    expect(labelColumnWidth(["接口设计"])).toBe(78);
+    expect(labelColumnWidth(["并发窗口"])).toBe(78);
+    expect(labelColumnWidth(["Promise 生命周期"])).toBeGreaterThan(117);
+    expect(labelColumnWidth([])).toBe(26);
+  });
+
   it("renders the built-in markdown template", () => {
     const out = renderExport("md", record, question, tempDir());
     expect(out.filename).toBe("2026-11-14.1430.张三.md");
     expect(out.mime).toBe("text/markdown");
     expect(out.content).toContain("# 演示题 · 张三");
     expect(out.content).toContain("86 / 100");
-    expect(out.content).toContain("| 动态渲染 | 86 | 100 |"); 
+    expect(out.content).toContain("### 📌 动态渲染 `(86/100)`");
+    expect(out.content).toContain("## 📊 评分明细");
+    expect(out.content).not.toContain("| ---");
     expect(out.content).toContain("结构清晰");
+    expect(out.content).toContain("[朱墨本](https://github.com/zhumoben/zhumoben)");
+    expect(out.content).not.toContain("记录文件");
+    expect(out.content).toMatch(/\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} UTC[+-]\d{2}:\d{2}/);
   });
 
   it("renders the built-in html template with the score", () => {
@@ -68,6 +80,41 @@ describe("export templates", () => {
     expect(out.content).toContain("<!doctype html>");
     expect(out.content).toContain("86");
     expect(out.content).toContain("动态渲染");
+    expect(out.content).toContain("朱墨本");
+    expect(out.content).toContain('href="https://github.com/zhumoben/zhumoben"');
+    expect(out.content).toContain('target="_blank"');
+    expect(out.content).toContain('class="col-dim"');
+    expect(out.content).toMatch(/width:min\(\d+px, 40%\)/);
+    expect(out.content).toMatch(/\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} UTC[+-]\d{2}:\d{2}/);
+  });
+
+  it("renders notes as markdown in html and keeps raw markdown in md", () => {
+    const withMarkdown: ScoreRecord = {
+      ...record,
+      scores: { render: { score: 86, note: "**一次 map**\n\n- 缺少缓存\n- 未处理卸载" } },
+      notes: { pros: "**结构清晰**", cons: "- 缺少校验", questions: "`tsc` 跑过吗" },
+    };
+
+    const html = renderExport("html", withMarkdown, question, tempDir());
+    expect(html.content).toContain("<strong>一次 map</strong>");
+    expect(html.content).toContain("<li>缺少缓存</li>");
+    expect(html.content).toContain("<strong>结构清晰</strong>");
+    expect(html.content).toContain("<code>tsc</code>");
+
+    const md = renderExport("md", withMarkdown, question, tempDir());
+    expect(md.content).toContain("**一次 map**");
+    expect(md.content).not.toContain("<strong>");
+  });
+
+  it("keeps multi-line notes as prose in markdown", () => {
+    const withLines: ScoreRecord = {
+      ...record,
+      scores: { render: { score: 86, note: "第一行\n第二行 | 带竖线\n- 列表项" } },
+    };
+
+    const md = renderExport("md", withLines, question, tempDir());
+    expect(md.content).toContain("第一行\n第二行 | 带竖线\n- 列表项");
+    expect(md.content).not.toContain("<br>");
   });
 
   it("lets a consumer override a template", () => {

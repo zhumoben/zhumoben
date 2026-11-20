@@ -56,7 +56,19 @@
   td { padding: 10px 12px; border-bottom: 1px solid #eef0f3; vertical-align: top; }
   tr:last-child td { border-bottom: 0; }
   .num { font-family: var(--mono); text-align: right; font-variant-numeric: tabular-nums; }
+  .col-dim { overflow-wrap: anywhere; }
   .note { color: var(--ink-2); font-size: 12px; }
+  .note > :first-child, .prose > :first-child { margin-top: 0; }
+  .note > :last-child, .prose > :last-child { margin-bottom: 0; }
+  .note p, .prose p { margin: 0 0 .55em; }
+  .note ul, .note ol, .prose ul, .prose ol { margin: 0 0 .55em; padding-left: 20px; }
+  .note li, .prose li { margin: .1em 0; }
+  .note code, .prose code { font-family: var(--mono); font-size: 11.5px; background: #f2f4f6; border-radius: 3px; padding: 1px 4px; }
+  .note pre, .prose pre { margin: 0 0 .55em; padding: 8px 10px; background: #f7f8f9; border: 1px solid var(--line); border-radius: 4px; overflow-x: auto; }
+  .note pre code, .prose pre code { background: none; padding: 0; }
+  .note blockquote, .prose blockquote { margin: 0 0 .55em; padding-left: 10px; border-left: 2px solid var(--line); color: var(--ink-3); }
+  .note a, .prose a { color: var(--accent-deep); }
+  .note strong, .prose strong { font-weight: 600; }
   .badge { display: inline-block; padding: 1px 7px; border-radius: 4px; font-size: 11px; font-weight: 500; }
   .badge-accent { background: var(--accent-soft); color: var(--accent-deep); }
   .badge-gold { background: #f7f0dc; color: #7f6420; }
@@ -71,9 +83,24 @@
   .note-block.pro { border-left-color: #2f8a6a; }
   .note-block.con { border-left-color: var(--danger); }
   .note-block.q { border-left-color: var(--accent); }
-  .note-block h3 { margin: 0 0 4px; font: 500 10px/1.6 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); }
-  .note-block p { margin: 0; white-space: pre-wrap; font-size: 13px; }
+  .note-block > h3 { margin: 0 0 4px; font: 500 10px/1.6 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); }
+  .note h1, .note h2, .note h3, .note h4, .note h5, .note h6,
+  .prose h1, .prose h2, .prose h3, .prose h4, .prose h5, .prose h6 {
+    margin: .8em 0 .35em; padding: 0; border: 0;
+    font-family: var(--sans); font-weight: 600; letter-spacing: normal;
+    text-transform: none; color: var(--ink); line-height: 1.4;
+  }
+  .note h1, .prose h1 { font-size: 19px; }
+  .note h2, .prose h2 { font-size: 17px; }
+  .note h3, .prose h3 { font-size: 15px; }
+  .note h4, .prose h4 { font-size: 13.5px; }
+  .note h5, .prose h5 { font-size: 12.5px; }
+  .note h6, .prose h6 { font-size: 12px; color: var(--ink-3); }
+  .note hr, .prose hr { margin: .8em 0; border: 0; border-top: 1px solid var(--line); }
+  .prose { font-size: 13px; }
   footer { margin-top: 36px; padding-top: 14px; border-top: 1px solid var(--line); font: 400 10.5px/1.6 var(--mono); color: var(--ink-3); }
+  footer a { color: var(--accent-deep); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
   @media print { body { background: #fff; } .hero { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
 </style>
 </head>
@@ -101,15 +128,15 @@
   <h2>评分明细</h2>
   <table>
     <thead>
-      <tr><th style="width:40%">维度</th><th style="width:12%" class="num">得分</th><th style="width:10%" class="num">满分</th><th>备注</th></tr>
+      <tr><th class="col-dim" style="width:min({{dimensionWidth}}px, 40%)">维度</th><th style="width:12%" class="num">得分</th><th style="width:10%" class="num">满分</th><th>备注</th></tr>
     </thead>
     <tbody>
       {{#each rows}}
       <tr>
-        <td>{{label}}</td>
-        <td class="num">{{#if score}}{{score}}{{else}}—{{/if}}</td>
+        <td class="col-dim">{{label}}</td>
+        <td class="num">{{#if hasScore}}{{score}}{{else}}—{{/if}}</td>
         <td class="num">{{max}}</td>
-        <td class="note">{{note}}</td>
+        <td class="note">{{{note}}}</td>
       </tr>
       {{/each}}
     </tbody>
@@ -117,12 +144,12 @@
 
   <h2>面试笔记</h2>
   <div class="notes">
-    <div class="note-block pro"><h3>Pro · 做得好</h3><p>{{#if record.notes.pros}}{{record.notes.pros}}{{else}}（未填写）{{/if}}</p></div>
-    <div class="note-block con"><h3>Con · 问题</h3><p>{{#if record.notes.cons}}{{record.notes.cons}}{{else}}（未填写）{{/if}}</p></div>
-    <div class="note-block q"><h3>Q · 待追问</h3><p>{{#if record.notes.questions}}{{record.notes.questions}}{{else}}（未填写）{{/if}}</p></div>
+    <div class="note-block pro"><h3>Pro · 做得好</h3><div class="prose">{{#if record.notes.pros}}{{{record.notes.pros}}}{{else}}（未填写）{{/if}}</div></div>
+    <div class="note-block con"><h3>Con · 问题</h3><div class="prose">{{#if record.notes.cons}}{{{record.notes.cons}}}{{else}}（未填写）{{/if}}</div></div>
+    <div class="note-block q"><h3>Q · 待追问</h3><div class="prose">{{#if record.notes.questions}}{{{record.notes.questions}}}{{else}}（未填写）{{/if}}</div></div>
   </div>
 
-  <footer>zhumoben · {{id}} · 生成于 {{generatedAt}}</footer>
+  <footer><a href="{{homepage}}" target="_blank" rel="noopener noreferrer">{{product}}</a> · 生成于 {{generatedAt}}</footer>
 </div>
 </body>
 </html>
