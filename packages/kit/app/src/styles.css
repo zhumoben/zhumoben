@@ -664,13 +664,36 @@ details.qa[open] summary .chev { transform: rotate(90deg); }
 .item__score::placeholder { color: #b3bac2; }
 .item__score:focus { outline: none; background: #fff; border-color: var(--zhu); box-shadow: 0 0 0 2px rgb(176 64 58 / .15); }
 .item__max { flex: none; width: 28px; font: 400 10px/1 var(--font-mono); color: var(--ink-3); }
-.item__note {
-  width: 100%; margin-top: 4px; min-height: 22px; padding: 3px 6px;
+.md-field { width: 100%; overflow: hidden; }
+.md-field .cm-editor { background: transparent; color: #2b323a; font-family: var(--font-mono); font-size: 11.5px; }
+.md-field .cm-editor.cm-focused { outline: none; }
+.md-field .cm-scroller { font-family: inherit; }
+.md-field .cm-content { caret-color: var(--zhu); }
+.md-field .cm-line { padding: 0; }
+.md-field .cm-placeholder { color: #b3bac2; }
+.md-field .cm-selectionBackground,
+.md-field .cm-focused > .cm-scroller > .cm-selectionLayer .cm-selectionBackground,
+.md-field .cm-content ::selection { background: rgb(176 64 58 / .18); }
+.md-field--note {
+  margin-top: 4px;
   border: 1px solid transparent; border-radius: var(--r-sm); background: #f7f8fa;
-  font-size: 11.5px; resize: none; field-sizing: content;
+  transition: border-color .15s, background .15s;
 }
-.item__note::placeholder { color: #b3bac2; }
-.item__note:focus { outline: none; background: #fff; border-color: var(--line-2); }
+.md-field--note .cm-scroller { line-height: 1.75; }
+.md-field--note .cm-content { padding: 3px 6px; min-height: 20px; }
+.md-field--note:focus-within { background: #fff; border-color: var(--line-2); }
+/* Markdown marks in the scorecard fields: quiet marks, headings in seal red, code in the accent color. */
+.md-field .md-tok-heading { color: var(--zhu-deep); font-weight: 700; }
+.md-field .md-tok-strong { color: var(--ink); font-weight: 700; }
+.md-field .md-tok-em { color: var(--ink); font-style: italic; }
+.md-field .md-tok-quote { color: var(--ink-2); font-style: italic; }
+.md-field .md-tok-mark { color: var(--ink-3); }
+.md-field .md-tok-list { color: var(--amber); font-weight: 700; }
+.md-field .md-tok-link,
+.md-field .md-tok-label { color: var(--accent-ink); }
+.md-field .md-tok-url { color: var(--ink-3); text-decoration: underline; }
+.md-field .md-tok-code { color: var(--accent-ink); background: var(--accent-soft); border-radius: 2px; }
+.md-field .md-tok-invalid { color: var(--red-ink); background: var(--red-soft); }
 .item.is-filled .item__label { font-weight: 600; color: #111519; }
 .item.is-filled .item__score { border-color: var(--zhu-soft); background: #fdf7f6; }
 
@@ -685,13 +708,9 @@ details.qa[open] summary .chev { transform: rotate(90deg); }
 .note-box:focus-within { background: #fff; border-color: var(--line-2); }
 .note-box__label { display: flex; align-items: center; gap: 5px; font: 500 10px/1.6 var(--font-sans); color: var(--ink-2); }
 .note-box__label i { font-style: normal; font: 500 8.5px/1 var(--font-mono); letter-spacing: .08em; padding: 2px 4px; border-radius: 3px; background: var(--paper-soft); color: var(--ink-2); }
-.note-box textarea {
-  display: block; width: 100%; min-height: 38px; padding: 2px 0 0;
-  border: 0; background: transparent; resize: none; field-sizing: content;
-  font: 400 11.5px/1.6 var(--font-sans); color: #2b323a;
-}
-.note-box textarea::placeholder { color: #b3bac2; }
-.note-box textarea:focus { outline: none; }
+.md-field--notes { padding: 2px 0 0; }
+.md-field--notes .cm-scroller { line-height: 1.6; }
+.md-field--notes .cm-content { padding: 0; min-height: 36px; }
 .note-box--pro { border-left-color: #2f8a6a; }
 .note-box--pro .note-box__label i { background: var(--color-tone-green-soft); color: var(--color-tone-green-ink); }
 .note-box--con { border-left-color: var(--danger); }
