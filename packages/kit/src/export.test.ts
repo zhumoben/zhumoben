@@ -65,7 +65,9 @@ describe("export templates", () => {
     expect(out.mime).toBe("text/markdown");
     expect(out.content).toContain("# 演示题 · 张三");
     expect(out.content).toContain("86 / 100");
-    expect(out.content).toContain("| 动态渲染 | 86 | 100 |"); 
+    expect(out.content).toContain("### 动态渲染");
+    expect(out.content).toContain("得分：86 / 100");
+    expect(out.content).not.toContain("| ---");
     expect(out.content).toContain("结构清晰");
     expect(out.content).toContain("[朱墨本](https://github.com/zhumoben/zhumoben)");
     expect(out.content).not.toContain("记录文件");
@@ -104,14 +106,14 @@ describe("export templates", () => {
     expect(md.content).not.toContain("<strong>");
   });
 
-  it("flattens multi-line notes into one markdown table cell", () => {
+  it("keeps multi-line notes as prose in markdown", () => {
     const withLines: ScoreRecord = {
       ...record,
       scores: { render: { score: 86, note: "第一行\n第二行 | 带竖线\n- 列表项" } },
     };
 
     const md = renderExport("md", withLines, question, tempDir());
-    expect(md.content).toContain("| 动态渲染 | 86 | 100 | 第一行 第二行 \\| 带竖线 列表项 |");
+    expect(md.content).toContain("第一行\n第二行 | 带竖线\n- 列表项");
     expect(md.content).not.toContain("<br>");
   });
 

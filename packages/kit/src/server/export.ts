@@ -51,24 +51,6 @@ export function labelColumnWidth(labels: string[]): number {
   return Math.ceil(widest + padding);
 }
 
-/** Keep a Markdown table cell on one line, flattening block syntax so any renderer accepts it. */
-export function markdownTableCell(text: string): string {
-  return text
-    .split(/\r?\n/)
-    .map((line) =>
-      line
-        .trim()
-        .replace(/^#{1,6}\s+/, "")
-        .replace(/^>\s?/, "")
-        .replace(/^[-*+]\s+/, "")
-        .replace(/^(`{3,}|~{3,}).*$/, ""),
-    )
-    .filter(Boolean)
-    .join(" ")
-    .replace(/\s+/g, " ")
-    .replace(/\|/g, "\\|");
-}
-
 export function renderExport(
   format: ExportFormat,
   record: ScoreRecord,
@@ -97,14 +79,18 @@ export function renderExport(
   const template = Handlebars.compile(source, { noEscape: format === "md" });
 
   const rows = card.groups.flatMap((group) =>
-    group.items.map((item) => ({
-      group: group.title,
-      label: item.label,
-      score: record.scores[item.id]?.score ?? null,
-      max: item.max,
-      note: record.scores[item.id]?.note ?? "",
-      fullCredit: item.fullCredit ?? "",
-    })),
+    group.items.map((item) => {
+      const score = record.scores[item.id]?.score ?? null;
+      return {
+        group: group.title,
+        label: item.label,
+        score,
+        hasScore: typeof score === "number",
+        max: item.max,
+        note: record.scores[item.id]?.note ?? "",
+        fullCredit: item.fullCredit ?? "",
+      };
+    }),
   );
 
   const dimensionWidth = labelColumnWidth([...rows.map((row) => row.label), "维度"]);
@@ -112,13 +98,7 @@ export function renderExport(
   const isHtml = format === "html";
   const viewRows = isHtml
     ? rows.map((row) => ({ ...row, note: renderNoteMarkdown(row.note) }))
-    : format === "md"
-      ? rows.map((row) => ({
-          ...row,
-          label: markdownTableCell(row.label),
-          note: markdownTableCell(row.note),
-        }))
-      : rows;
+    : rows;
   const viewRecord = isHtml
     ? {
         ...record,
