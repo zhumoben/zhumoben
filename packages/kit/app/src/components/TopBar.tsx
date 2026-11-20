@@ -36,7 +36,19 @@ export function TopBar({
         }}
         style={{ color: "inherit" }}
       >
-        <span className="brand__mark">验</span>
+        <svg
+          className="brand__mark"
+          viewBox="5 4.6 22 22"
+          width={26}
+          height={26}
+          aria-hidden="true"
+          focusable="false"
+        >
+          <path
+            d="M10.9 6.4H13.6v6.9L16 15.8l2.4-2.5V6.4h2.7A1.5 1.5 0 0 1 22.6 7.9v16a1.5 1.5 0 0 1-1.5 1.5H10.9a1.5 1.5 0 0 1-1.5-1.5v-16a1.5 1.5 0 0 1 1.5-1.5Z"
+            fill="currentColor"
+          />
+        </svg>
         <span className="brand__name">{title}</span>
         <span className="brand__tag">v0.1</span>
       </a>

@@ -10,3 +10,10 @@ dist/
 examples/demo/dist/
 examples/demo/records/_trash/
 *.tgz
+
+# local pnpm store
+/.pnpm-store/
+
+# python caches
+__pycache__/
+*.pyc
