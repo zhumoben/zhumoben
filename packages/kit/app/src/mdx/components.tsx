@@ -8,12 +8,15 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { toBlob } from "html-to-image";
 import {
   AlertTriangle,
   Check,
   CheckCircle,
   ChevronRight,
   Copy,
+  FileText,
+  Image as ImageIcon,
   Info,
   XCircle,
 } from "react-feather";
@@ -159,10 +162,157 @@ function copySelection(node: HTMLElement): boolean {
   return copied;
 }
 
+function trimText(text: string): string {
+  return text.replace(/\u00a0/g, " ").replace(/[ \t]+\n/g, "\n").trim();
+}
+
+function serializeChildren(node: Node): string {
+  return Array.from(node.childNodes)
+    .map((child) => serializeNode(child))
+    .join("");
+}
+
+/** Turn the rendered question back into standard Markdown. */
+function serializeNode(node: Node): string {
+  if (node.nodeType === Node.TEXT_NODE) {
+    return node.textContent ?? "";
+  }
+  if (!(node instanceof HTMLElement)) return "";
+
+  const tag = node.tagName.toLowerCase();
+  if (node.classList.contains("code__bar")) return "";
+
+  switch (tag) {
+    case "p": {
+      const content = trimText(serializeChildren(node));
+      return content ? `${content}\n\n` : "";
+    }
+    case "br":
+      return "\n";
+    case "strong":
+    case "b": {
+      const content = trimText(serializeChildren(node));
+      if (!content) return "";
+      return `**${content}**`;
+    }
+    case "em":
+    case "i": {
+      const content = trimText(serializeChildren(node));
+      if (!content) return "";
+      return `*${content}*`;
+    }
+    case "del":
+    case "s": {
+      const content = trimText(serializeChildren(node));
+      if (!content) return "";
+      return `~~${content}~~`;
+    }
+    case "code": {
+      if (node.parentElement?.tagName.toLowerCase() === "pre") return "";
+      const text = node.textContent ?? "";
+      return text ? `\`${text}\`` : "";
+    }
+    case "pre": {
+      const code = node.querySelector("code");
+      const language =
+        node.closest(".code")?.querySelector(".lang")?.textContent?.trim() ?? "";
+      const text = (code?.textContent ?? node.textContent ?? "").replace(/\n$/, "");
+      if (!text) return "";
+      const fence = "```";
+      return `${fence}${language}\n${text}\n${fence}\n\n`;
+    }
+    case "ul":
+    case "ol": {
+      const items = Array.from(node.children).filter(
+        (child) => child.tagName.toLowerCase() === "li",
+      );
+      const lines = items.map((item, index) => {
+        const marker = tag === "ol" ? `${index + 1}. ` : "- ";
+        const content = trimText(serializeChildren(item));
+        const indented = content.replace(/\n/g, `\n${" ".repeat(marker.length)}`);
+        return `${marker}${indented}\n`;
+      });
+      return `${lines.join("")}\n`;
+    }
+    case "blockquote": {
+      const content = trimText(serializeChildren(node));
+      if (!content) return "";
+      return `${content
+        .split("\n")
+        .map((line) => `> ${line}`)
+        .join("\n")}\n\n`;
+    }
+    case "a": {
+      const href = node.getAttribute("href") ?? "";
+      const label = trimText(serializeChildren(node)) || href;
+      if (!href) return label;
+      return `[${label}](${href})`;
+    }
+    case "h1":
+    case "h2":
+    case "h3":
+    case "h4":
+    case "h5":
+    case "h6": {
+      const content = trimText(serializeChildren(node));
+      if (!content) return "";
+      const level = Number(tag[1]);
+      return `${"#".repeat(level)} ${content}\n\n`;
+    }
+    default:
+      return serializeChildren(node);
+  }
+}
+
+function plainText(node: HTMLElement): string {
+  return trimText(
+    Array.from(node.childNodes)
+      .map((child) => serializeNode(child))
+      .join(""),
+  );
+}
+
+async function copyPlainText(text: string): Promise<void> {
+  if (navigator.clipboard?.writeText) {
+    try {
+      await navigator.clipboard.writeText(text);
+      return;
+    } catch {
+      // fall through to the selection-based fallback
+    }
+  }
+
+  const area = document.createElement("textarea");
+  area.value = text;
+  area.style.position = "fixed";
+  area.style.opacity = "0";
+  document.body.appendChild(area);
+  area.focus();
+  area.select();
+  const copied = document.execCommand("copy");
+  area.remove();
+  if (!copied) throw new Error("copy failed");
+}
+
+function downloadBlob(blob: Blob, filename: string): void {
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = filename;
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 1500);
+}
+
+type CopyAction = "rich" | "markdown" | "image";
+
 function QuestionCard({ children }: { children?: ReactNode }) {
   const bodyRef = useRef<HTMLDivElement>(null);
   const timerRef = useRef<number | undefined>(undefined);
-  const [copied, setCopied] = useState(false);
+  const [copied, setCopied] = useState<CopyAction | null>(null);
+  const [imageBusy, setImageBusy] = useState(false);
+  const [imageDownloaded, setImageDownloaded] = useState(false);
 
   useEffect(() => {
     return () => {
@@ -170,13 +320,16 @@ function QuestionCard({ children }: { children?: ReactNode }) {
     };
   }, []);
 
-  const flash = () => {
-    setCopied(true);
+  const flash = (action: CopyAction) => {
+    setCopied(action);
     if (timerRef.current !== undefined) window.clearTimeout(timerRef.current);
-    timerRef.current = window.setTimeout(() => setCopied(false), 1800);
+    timerRef.current = window.setTimeout(() => {
+      setCopied(null);
+      setImageDownloaded(false);
+    }, 1800);
   };
 
-  const handleCopy = async () => {
+  const handleCopyRich = async () => {
     const body = bodyRef.current;
     if (!body) return;
 
@@ -195,9 +348,63 @@ function QuestionCard({ children }: { children?: ReactNode }) {
       } else if (!copySelection(body)) {
         return;
       }
-      flash();
+      flash("rich");
     } catch {
-      if (copySelection(body)) flash();
+      if (copySelection(body)) flash("rich");
+    }
+  };
+
+  const handleCopyMarkdown = async () => {
+    const body = bodyRef.current;
+    if (!body) return;
+
+    try {
+      await copyPlainText(plainText(body));
+      flash("markdown");
+    } catch {
+      // Leave the label unchanged when the clipboard is unavailable.
+    }
+  };
+
+  const handleCopyImage = async () => {
+    const body = bodyRef.current;
+    if (!body || imageBusy) return;
+
+    setImageBusy(true);
+    body.classList.add("qcard__body--capture");
+
+    try {
+      // Give the layout a frame to widen the capture area and unclip code.
+      await new Promise<void>((resolve) => {
+        requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+      });
+
+      const blob = await toBlob(body, {
+        pixelRatio: 2,
+        backgroundColor: "#ffffff",
+        skipFonts: true,
+      });
+      if (!blob) return;
+
+      try {
+        if (navigator.clipboard?.write && typeof ClipboardItem !== "undefined") {
+          await navigator.clipboard.write([
+            new ClipboardItem({ "image/png": blob }),
+          ]);
+        } else {
+          throw new Error("clipboard images unavailable");
+        }
+        setImageDownloaded(false);
+      } catch {
+        downloadBlob(blob, "question.png");
+        setImageDownloaded(true);
+      }
+      flash("image");
+    } catch (error) {
+      console.error("failed to render the question image", error);
+    } finally {
+      body.classList.remove("qcard__body--capture");
+      setImageBusy(false);
     }
   };
 
@@ -205,14 +412,54 @@ function QuestionCard({ children }: { children?: ReactNode }) {
     <div className="qcard">
       <div className="qcard__bar">
         <span className="qcard__label">题目原文</span>
-        <button type="button" className="btn btn--sm qcard__copy" onClick={handleCopy}>
-          {copied ? (
-            <Check size={12} strokeWidth={2} aria-hidden="true" />
-          ) : (
-            <Copy size={12} strokeWidth={1.8} aria-hidden="true" />
-          )}
-          {copied ? "已复制" : "复制题目"}
-        </button>
+        <div className="qcard__actions">
+          <button
+            type="button"
+            className="btn btn--sm"
+            onClick={handleCopyRich}
+            title="复制为富文本，适合 Notion、Word、飞书"
+          >
+            {copied === "rich" ? (
+              <Check size={12} strokeWidth={2} aria-hidden="true" />
+            ) : (
+              <Copy size={12} strokeWidth={1.8} aria-hidden="true" />
+            )}
+            {copied === "rich" ? "已复制" : "复制题目"}
+          </button>
+          <button
+            type="button"
+            className="btn btn--sm"
+            onClick={handleCopyMarkdown}
+            title="复制为标准 Markdown"
+          >
+            {copied === "markdown" ? (
+              <Check size={12} strokeWidth={2} aria-hidden="true" />
+            ) : (
+              <FileText size={12} strokeWidth={1.8} aria-hidden="true" />
+            )}
+            {copied === "markdown" ? "已复制" : "Markdown"}
+          </button>
+          <button
+            type="button"
+            className="btn btn--sm"
+            onClick={handleCopyImage}
+            disabled={imageBusy}
+            title="复制为图片，适合 Google Meet"
+          >
+            {copied === "image" ? (
+              <Check size={12} strokeWidth={2} aria-hidden="true" />
+            ) : (
+              <ImageIcon size={12} strokeWidth={1.8} aria-hidden="true" />
+            )}
+            {imageBusy
+              ? "生成中…"
+              : copied === "image"
+                ? imageDownloaded
+                  ? "已下载"
+                  : "已复制"
+                : "图片"}
+          </button>
+        </div>
       </div>
       <div className="qcard__body" ref={bodyRef}>
         {children}

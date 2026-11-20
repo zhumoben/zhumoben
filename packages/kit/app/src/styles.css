@@ -379,6 +379,7 @@ code.inline {
 }
 .qcard__bar {
   display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  flex-wrap: wrap; row-gap: 6px;
   padding: 7px 10px 7px 14px;
   background: #fafbfc;
   border-bottom: 1px solid var(--line);
@@ -387,7 +388,11 @@ code.inline {
   font: 500 9.5px/1 var(--font-mono);
   letter-spacing: .16em; text-transform: uppercase; color: var(--ink-3);
 }
-.qcard__copy { flex: none; }
+.qcard__actions {
+  display: flex; align-items: center; justify-content: flex-end;
+  flex-wrap: wrap; gap: 6px;
+}
+.qcard__actions .btn { flex: none; }
 .qcard__body { padding: 14px 16px 2px; }
 .qcard__body > :first-child { margin-top: 0; }
 .qcard__body > :last-child { margin-bottom: 12px; }
@@ -396,6 +401,22 @@ code.inline {
 .qcard__body ul { list-style: disc; }
 .qcard__body ol { list-style: decimal; }
 .qcard__body li { margin: 3px 0; }
+
+/* temporary state while rasterising the question: widen the canvas and
+   let long code lines show instead of being clipped by the scroll container */
+.qcard__body--capture {
+  width: 480px;
+  max-width: none;
+  background: #fff;
+}
+.qcard__body.qcard__body--capture pre {
+  overflow: visible;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.qcard__body.qcard__body--capture .code {
+  overflow: visible;
+}
 
 /* ============================== content bits ============================== */
 .callout {

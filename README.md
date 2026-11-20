@@ -158,7 +158,7 @@ Deleting a record moves it to `records/_trash/`.
 | `<Timeline>` + `<Step time title>` | Chronological observation notes |
 | `<Checklist>` | Unchecked verification list |
 | `<Q label="Q4" question="…">` | Collapsible follow-up question |
-| `<QuestionCard>` | Original question statement with a rich-text copy button |
+| `<QuestionCard>` | Original question statement with rich-text, Markdown, and image copy actions |
 | `<Rubric />` | Renders the scorecard weights as a table |
 
 ### A CJK emphasis gotcha
