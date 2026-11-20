@@ -83,7 +83,13 @@
   .note-block.pro { border-left-color: #2f8a6a; }
   .note-block.con { border-left-color: var(--danger); }
   .note-block.q { border-left-color: var(--accent); }
-  .note-block h3 { margin: 0 0 4px; font: 500 10px/1.6 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); }
+  .note-block > h3 { margin: 0 0 4px; font: 500 10px/1.6 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); }
+  .note h1, .note h2, .note h3, .note h4, .note h5, .note h6,
+  .prose h1, .prose h2, .prose h3, .prose h4, .prose h5, .prose h6 {
+    margin: .8em 0 .35em; padding: 0; border: 0;
+    font: 600 13px/1.5 var(--sans); letter-spacing: normal; text-transform: none; color: var(--ink);
+  }
+  .note hr, .prose hr { margin: .8em 0; border: 0; border-top: 1px solid var(--line); }
   .prose { font-size: 13px; }
   footer { margin-top: 36px; padding-top: 14px; border-top: 1px solid var(--line); font: 400 10.5px/1.6 var(--mono); color: var(--ink-3); }
   footer a { color: var(--accent-deep); text-decoration: none; }
