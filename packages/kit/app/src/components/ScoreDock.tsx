@@ -8,6 +8,7 @@ import { bandOf, clamp, emptyScores, recordIdFor, totalOf } from "../../../share
 import { api, copyText, download } from "../lib/api";
 import { currentTime, percent, today } from "../lib/format";
 import { setScoreMark } from "../lib/score-mark";
+import { MarkdownField } from "./MarkdownField";
 import { Timer } from "./Timer";
 
 registerLocale("zh-CN", zhCN);
@@ -355,11 +356,12 @@ export function ScoreDock({
                       />
                       <span className="item__max">/ {item.max}</span>
                     </div>
-                    <textarea
-                      className="item__note"
+                    <MarkdownField
+                      variant="note"
+                      ariaLabel={`评分理由：${item.label}`}
                       placeholder="理由 / 证据（可选）"
                       value={entry?.note ?? ""}
-                      onChange={(event) => setNote(item.id, event.target.value)}
+                      onChange={(note) => setNote(item.id, note)}
                     />
                   </div>
                 );
@@ -372,36 +374,42 @@ export function ScoreDock({
           <div className="notes__head">
             面试笔记 <span>不计分 · 随导出</span>
           </div>
-          <label className="note-box note-box--pro">
+          <div className="note-box note-box--pro">
             <span className="note-box__label">
               <i>PRO</i>做得好 / 加分点
             </span>
-            <textarea
-              value={record.notes.pros}
+            <MarkdownField
+              variant="notes"
+              ariaLabel="Pro 做得好 / 加分点"
               placeholder="判别联合建模、状态合并正确…"
-              onChange={(event) => setNotes("pros", event.target.value)}
+              value={record.notes.pros}
+              onChange={(value) => setNotes("pros", value)}
             />
-          </label>
-          <label className="note-box note-box--con">
+          </div>
+          <div className="note-box note-box--con">
             <span className="note-box__label">
               <i>CON</i>问题 / 扣分依据
             </span>
-            <textarea
-              value={record.notes.cons}
+            <MarkdownField
+              variant="notes"
+              ariaLabel="Con 问题 / 扣分依据"
               placeholder="value 绑错、key 用 index…"
-              onChange={(event) => setNotes("cons", event.target.value)}
+              value={record.notes.cons}
+              onChange={(value) => setNotes("cons", value)}
             />
-          </label>
-          <label className="note-box note-box--q">
+          </div>
+          <div className="note-box note-box--q">
             <span className="note-box__label">
               <i>Q</i>待追问 / 存疑
             </span>
-            <textarea
-              value={record.notes.questions}
+            <MarkdownField
+              variant="notes"
+              ariaLabel="Q 待追问 / 存疑"
               placeholder="跑过 tsc 吗？fields 变化怎么处理？"
-              onChange={(event) => setNotes("questions", event.target.value)}
+              value={record.notes.questions}
+              onChange={(value) => setNotes("questions", value)}
             />
-          </label>
+          </div>
         </div>
       </div>
 
