@@ -5,5 +5,8 @@ export default {
   tags: {
     react: { label: "React" },
     typescript: { label: "TypeScript" },
+    javascript: { label: "JavaScript" },
+    async: { label: "Async" },
+    promise: { label: "Promise" },
   },
 };

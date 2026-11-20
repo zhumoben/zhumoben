@@ -1,0 +1,56 @@
+{
+  "version": 1,
+  "max": 100,
+  "groups": [
+    {
+      "id": "core",
+      "title": "核心实现",
+      "items": [
+        {
+          "id": "window",
+          "label": "并发窗口",
+          "max": 30,
+          "fullCredit": "任意时刻运行中的任务不超过上限；完成一个立即补一个，没有按批等待；输出顺序为 `2 3 1 4`"
+        },
+        {
+          "id": "queue",
+          "label": "队列与公平性",
+          "max": 20,
+          "fullCredit": "超出并发数的任务进入 FIFO 队列；任务完成后按提交顺序补位；启动后再 add 的任务也能正确执行或排队"
+        },
+        {
+          "id": "promise",
+          "label": "Promise 生命周期",
+          "max": 20,
+          "fullCredit": "`add` 返回 Promise；任务结果能 resolve 给调用方；错误能 reject；任务同步抛错也能兜住"
+        }
+      ]
+    },
+    {
+      "id": "craft",
+      "title": "工程细节",
+      "items": [
+        {
+          "id": "robust",
+          "label": "边界与健壮性",
+          "max": 15,
+          "fullCredit": "失败也释放槽位；校验 `limit` 为正整数；空队列安全；不丢任务、不超并发"
+        },
+        {
+          "id": "types",
+          "label": "类型与细节",
+          "max": 15,
+          "fullCredit": "`add` 用泛型返回正确的类型；无 `any`；命名清楚；没有轮询或无效优化"
+        }
+      ]
+    }
+  ],
+  "bands": [
+    { "min": 90, "max": 100, "label": "Strong Senior", "tone": "gold" },
+    { "min": 80, "max": 89, "label": "Senior", "tone": "green" },
+    { "min": 70, "max": 79, "label": "Senior 存疑", "tone": "purple" },
+    { "min": 60, "max": 69, "label": "Mid", "tone": "blue" },
+    { "min": 50, "max": 59, "label": "Junior", "tone": "gray" },
+    { "min": 0, "max": 49, "label": "No Hire", "tone": "red" }
+  ]
+}

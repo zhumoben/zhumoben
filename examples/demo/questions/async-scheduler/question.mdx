@@ -1,0 +1,406 @@
+---
+title: 异步任务调度器
+subtitle: 并发控制与 Promise 队列
+level: L3
+levelLabel: 中级
+duration: 30 min
+stack: JavaScript · TypeScript 5
+format: 现场 / 在线笔试
+tags: [javascript, typescript, async, promise, live-coding]
+summary: 30 分钟实现一个并发上限为 2 的异步调度器。重点不是「能跑」，而是并发窗口、队列公平，以及失败后槽位能不能释放。
+---
+
+## 题目
+
+<QuestionCard>
+
+实现一个带并发限制的异步调度器 `Scheduler`，保证同时运行的任务最多有 2 个。
+
+完善下面的代码，使输出顺序为 `2 3 1 4`：
+
+```js
+class Scheduler {
+  add(promiseCreator) {
+    // TODO
+  }
+}
+
+const timeout = (time) => new Promise((resolve) => setTimeout(resolve, time));
+
+const scheduler = new Scheduler(2);
+const addTask = (time, order) => {
+  scheduler.add(() => timeout(time)).then(() => console.log(order));
+};
+
+addTask(1000, "1");
+addTask(500, "2");
+addTask(300, "3");
+addTask(400, "4");
+// 输出：2 3 1 4
+```
+
+补充要求：
+
+- `add` 接收一个返回 Promise 的函数，并返回一个 Promise；任务完成后 resolve 任务的返回值。
+- 任务失败时，`add` 返回的 Promise 要 reject，并且不能阻塞后续任务。
+- 用 TypeScript 标注 `Scheduler` 和 `add` 的类型。
+
+</QuestionCard>
+
+<Callout tone="info">
+
+**考官提示**：先不要提「队列」「信号量」「finally 释放」。先看他会不会自己画并发时间线，以及任务完成后怎么补位。
+
+</Callout>
+
+## 题目解析
+
+这是一道很典型的字节跳动前端面试题：表面是 Promise 用法，实际考的是**并发窗口的管理**。
+
+### 题目来源
+
+常见中文版本可见于 [掘金](https://juejin.cn/post/7458515840893632527) 和 [GitHub 题解](https://github.com/qappleh/Interview/issues/133)。本题在原文基础上补了返回值、失败处理和 TypeScript 三条约束，让 30 分钟内的评分标准更明确。
+
+### 三层区分
+
+| 层次 | 表现 |
+| --- | --- |
+| 能跑 | 四个任务都能输出，但同时跑几个不确定 |
+| 正确 | 任意时刻最多 2 个；输出 `2 3 1 4` |
+| 会设计 | 失败也能释放槽位；`add` 能返回值和错误；类型完整；边界有交代 |
+
+### 一条正确的时间线
+
+| 时刻 | 发生什么 |
+| --- | --- |
+| 0ms | 任务 1（1000ms）和任务 2（500ms）启动 |
+| 500ms | 任务 2 完成，输出 `2`；任务 3（300ms）补位 |
+| 800ms | 任务 3 完成，输出 `3`；任务 4（400ms）补位 |
+| 1000ms | 任务 1 完成，输出 `1` |
+| 1200ms | 任务 4 完成，输出 `4` |
+
+关键点：任务 3 不是在任务 1 完成后才启动，而是在**任意一个**槽位空出来时立即补位。
+
+### 常见错误
+
+| 错误 | 后果 |
+| --- | --- |
+| 每 2 个任务用一次 `Promise.all` | 第一批必须等最慢的任务 1，任务 3 到 1000ms 才开始，输出 `2 1 3 4` |
+| 任务一提交就执行 | 4 个任务同时跑，完全没有并发限制 |
+| `running` 只在开始时 `+1`，结束时忘了 `-1` | 跑完前两个就再也不启动新任务 |
+| 用 `setTimeout` 写死任务 | 只能跑题目里的例子，换个任务就不工作 |
+| `add` 不返回 Promise | 调用方无法 `await`，也拿不到任务结果 |
+| 忽略 reject | 任务失败后槽位不释放，后面的任务被饿死 |
+| 用 `while` 循环同步启动任务 | 计数还没生效就判断下一次，可能一次性全部启动 |
+
+### 题面缺口
+
+| 缺口 | 不处理的后果 | 可接受的处理 |
+| --- | --- | --- |
+| 没说失败任务怎么办 | 一个 reject 后队列卡死 | 用 `finally` 释放槽位；失败只影响它自己的 Promise |
+| 没说 `add` 的返回值 | 调用方拿不到结果 | 返回 Promise，并把任务结果透传出去 |
+| 没说并发数能不能变 | 构造函数写死 2 | 接收 `limit`，并校验正整数 |
+| 没说任务同步抛错怎么办 | 直接炸掉调用栈 | `Promise.resolve().then(task)` 包一层，转成 rejection |
+| 没说是否支持取消 | 长任务无法中止 | 主动提一句 `AbortSignal`，但 30 分钟内不要求实现 |
+| 没说任务能否动态添加 | 启动后再 add 的行为不明确 | 明确：只要有空槽就立即执行，否则进队列 |
+
+<Callout tone="warn">
+
+**打分口径**：只让任务跑起来、没有并发限制，封顶 45；能保持最多 2 个并发并输出正确顺序，可到 75；失败释放、返回值、类型和边界都处理，才进 90 以上。
+
+</Callout>
+
+## 考察要点
+
+| 维度 | 及格（中级） | 优秀（高级） |
+| --- | --- | --- |
+| 并发窗口 | 同时运行的任务不超过 2 个 | 完成任务后立即补位，不按批次等待 |
+| 队列 | 超出的任务能排队等待 | FIFO、动态添加、顺序可验证 |
+| Promise | 能返回 Promise | resolve 任务结果、reject 错误，不丢信息 |
+| 错误处理 | 知道失败要处理 | 失败也释放槽位，后续任务继续 |
+| 类型 | 能标注基本类型 | 泛型让 `add` 的返回类型正确，无 `any` |
+| 验证习惯 | 跑一遍题目例子 | 额外验证 reject、limit=1、启动后再 add |
+
+### 三个强信号
+
+- 先画时间线，再写代码。
+- 用 `finally` 释放槽位，而不是只在 `then` 里减计数。
+- 主动说「这里要保存任务的 resolve，才能让 `add` 返回 Promise」。
+
+## 参考答案
+
+### 1. 核心实现
+
+```ts
+type AsyncTask<T> = () => Promise<T>;
+
+export class Scheduler {
+  private readonly limit: number;
+  private running = 0;
+  private readonly queue: Array<() => void> = [];
+
+  constructor(limit: number) {
+    if (!Number.isInteger(limit) || limit < 1) {
+      throw new Error("limit must be a positive integer");
+    }
+    this.limit = limit;
+  }
+
+  add<T>(task: AsyncTask<T>): Promise<T> {
+    return new Promise<T>((resolve, reject) => {
+      const start = () => {
+        this.running += 1;
+
+        // 包一层 Promise，任务同步抛错也会变成 rejection
+        Promise.resolve()
+          .then(task)
+          .then(resolve, reject)
+          .finally(() => {
+            this.running -= 1;
+            this.next();
+          });
+      };
+
+      if (this.running < this.limit) {
+        start();
+      } else {
+        this.queue.push(start);
+      }
+    });
+  }
+
+  private next(): void {
+    if (this.running >= this.limit) return;
+    this.queue.shift()?.();
+  }
+}
+```
+
+### 2. 跑题目里的例子
+
+```ts
+const scheduler = new Scheduler(2);
+const timeout = (ms: number) =>
+  new Promise<void>((resolve) => setTimeout(resolve, ms));
+
+const tasks = [
+  { ms: 1000, order: "1" },
+  { ms: 500, order: "2" },
+  { ms: 300, order: "3" },
+  { ms: 400, order: "4" },
+];
+
+for (const { ms, order } of tasks) {
+  scheduler.add(() => timeout(ms)).then(() => console.log(order));
+}
+
+// 输出：2 3 1 4
+```
+
+返回值也能拿到：
+
+```ts
+const value = await scheduler.add(async () => {
+  await timeout(100);
+  return 42;
+});
+
+console.log(value); // 42
+```
+
+### 关键决策
+
+| 决策 | 理由 | 不这么做会怎样 |
+| --- | --- | --- |
+| 队列里存 `start` 闭包 | 任务真正开始执行时才占槽位 | 存任务函数本身，还要再维护一层状态 |
+| `running` 在 `start` 里加 | 与真正的启动时机一致 | 在 `add` 里加，排队的任务也会占名额 |
+| `finally` 里释放槽位 | 成功、失败、同步抛错都会走到 | 只在 `then` 里减，reject 时队列卡死 |
+| `Promise.resolve().then(task)` | 同步异常转换成 rejection | `task()` 直接抛错会打断 `add` 的 Promise |
+| `next()` 只取一个任务 | 每次释放一个槽位，只补一个 | 用 `while` 一次性补多个，容易超过上限 |
+| 构造时校验 `limit` | 0 或负数会让任务永远不执行 | 线上出现「提交了但没反应」 |
+| `add` 用泛型 | 调用方拿到的返回值类型正确 | 全变成 `Promise<unknown>` 或 `any` |
+| 不按批 `Promise.all` | 快任务不必等慢任务 | 并发利用率低，输出顺序也会错 |
+
+<Callout tone="bad">
+
+**30 分钟内不要求**：取消、优先级队列、运行中调整并发数、任务重试。这些是追问的素材，不是编码的必选项；硬塞进去反而容易把主流程写错。
+
+</Callout>
+
+## 评分标准
+
+编码 100 分，追问不计分。并发窗口占 30 分，因为它是这道题唯一不能靠「看起来对」蒙过去的部分。
+
+- **并发窗口（30）**：0–10 没有限制或一次全跑；11–20 能限制但按批等待；21–30 任意时刻不超过上限，完成一个立即补一个。
+- **队列与公平性（20）**：0–6 顺序错乱或丢任务；7–13 FIFO 但对启动后再 add 处理不清；14–20 FIFO、动态添加正确，输出 `2 3 1 4`。
+- **Promise 生命周期（20）**：0–6 `add` 不返回 Promise；7–13 返回 Promise 但拿不到结果 / 错误；14–20 结果透传、错误传播，同步抛错也能兜住。
+- **边界与健壮性（15）**：0–5 `limit` 非法直接死锁；6–10 失败会卡住队列；11–15 校验 `limit`、失败释放槽位、空队列安全。
+- **类型与细节（15）**：0–5 全是 `any` 或用 JS 硬写；6–10 有类型但泛型缺失；11–15 泛型正确、无 `any`、命名清楚、无轮询。
+
+<Rubric />
+
+<Callout tone="info">
+
+**追问不占分**，记进评分表的 `Questions`。这道题的追问很适合区分「背过题」和「真的理解并发窗口」。
+
+</Callout>
+
+## 进阶问题追问
+
+<Q label="Q1" question="为什么不能每两个任务用一次 Promise.all？" open>
+
+**期望**：`Promise.all` 等的是**整批**完成。第一批是任务 1（1000ms）和任务 2（500ms），必须等任务 1 到 1000ms 才启动任务 3，并发窗口白白空转 500ms，输出会变成 `2 1 3 4`。
+
+**加分**：指出 `Promise.race` 可以做「谁先完成谁补位」，但还要维护任务池索引，比队列方案更难读。
+
+**失分回答**：「分批也是最多 2 个」——只看了上限，没看吞吐。
+
+</Q>
+
+<Q label="Q2" question="任务 reject 之后，后面的任务还能继续跑吗？你的实现靠什么保证？">
+
+**期望**：能。槽位释放放在 `finally` 里，成功和失败都会执行；失败只让当前 `add` 返回的 Promise reject，不影响队列里的下一个任务。
+
+**加分**：指出调用方如果不 catch，会出现 unhandled rejection——这是调用方的责任，调度器只负责不吞掉错误。
+
+**失分回答**：「用 try/catch 包住整个调度器」——会把错误吞掉，调用方永远不知道任务失败。
+
+</Q>
+
+<Q label="Q3" question="并发数从 2 改成 n，并且允许运行中调大或调小，怎么改？">
+
+**期望**：`limit` 不要是 `readonly` 的常量，改成一个可变字段；调大时立即调用 `next()` 补位，直到跑满或队列为空；调小时不打断正在运行的任务，只停止补位，等自然结束。
+
+**加分**：指出「调小到小于当前 running」时不能强行中止任务，否则要引入取消机制。
+
+</Q>
+
+<Q label="Q4" question="add 在任务执行过程中被调用，会发生什么？如果同一 tick 连续 add 100 次呢？">
+
+**期望**：有空槽就同步启动，没空槽就进队列；同一 tick 里 `running` 是同步递增的，所以前 `limit` 个立即启动，其余全部排队，不会超并发。
+
+**加分**：指出 `start` 里第一个 `await` 之前是同步执行的，所以计数更新是可靠的。
+
+</Q>
+
+<Q label="Q5" question="如何支持取消？取消后槽位怎么释放？">
+
+**期望**：`add` 增加 `AbortSignal` 参数，任务内部监听 `abort` 并提前 reject（AbortError）；调度器仍然在 `finally` 里释放槽位。队列里的任务如果已被取消，可以直接跳过，不再启动。
+
+**加分**：区分「取消排队中的任务」和「取消正在运行的任务」：前者直接出队，后者依赖任务本身响应 signal。
+
+</Q>
+
+<Q label="Q6" question="如果要按提交顺序拿到所有结果，怎么写？">
+
+**期望**：把每个 `add` 返回的 Promise 收集起来，最后 `Promise.all`。因为 `add` 的 Promise 已经和任务结果绑定，顺序自然与提交顺序一致，和完成顺序无关。
+
+**加分**：指出如果某个任务失败，`Promise.all` 会整体 reject；要全部结果可以用 `Promise.allSettled`。
+
+</Q>
+
+## 红旗与绿旗
+
+<Duo>
+<Panel tone="good" title="✓ 绿旗">
+
+- 先画 0 / 500 / 800 / 1000 / 1200ms 的时间线
+- 用 `finally` 释放槽位
+- 主动处理 reject
+- `add` 返回 Promise 并透传结果
+- 用泛型标注返回类型
+- 写完自己跑一遍题目例子
+
+</Panel>
+<Panel tone="bad" title="✕ 红旗">
+
+- `Promise.all` 每两个一批
+- 四个任务一提交就全部执行
+- `running` 只加不减
+- `add` 没有返回值
+- 任务失败后队列不动
+- 硬编码 `setTimeout`，换个任务就不会跑
+
+</Panel>
+</Duo>
+
+<Callout tone="bad">
+
+**最强负信号**：用 `Promise.all` 分批还说「这样也是两个两个跑」。这说明他把「并发上限」理解成了「每批数量」，而不是「任意时刻正在运行的数量」。
+
+</Callout>
+
+## 现场操作手册
+
+### 开场（30 秒）
+
+<Callout tone="info">
+
+「30 分钟，一道异步调度题。目标是最多同时跑 2 个任务，输出顺序要是 `2 3 1 4`。**可以先画时间线，再写代码**。写完自己跑一遍，最后聊几个问题。」
+
+</Callout>
+
+### 时间轴
+
+<Timeline>
+<Step time="00:00 – 04:00" title="读题与画时间线">
+
+- 看他是否先算 500 / 800 / 1000 / 1200ms 这几个时刻。
+- 是否问到「失败怎么办」「add 要不要返回 Promise」。
+- 偏差：直接写 `Promise.all` 分批，通常没意识到任务 3 应该更早启动。
+
+</Step>
+<Step time="04:00 – 18:00" title="主体实现">
+
+- 盯三处：`running` 的加减、队列的存取、`add` 返回的 Promise。
+- 卡住只给方向：「先让四个任务按顺序跑起来，再想并发。」
+- 看到 `running` 只在 `add` 里加时先不打断，自测会暴露。
+
+</Step>
+<Step time="18:00 – 24:00" title="自测">
+
+- 让他跑题目例子，确认输出 `2 3 1 4`。
+- 追加测试：一个任务 reject 后，后面的任务是否继续。
+- 追加测试：`limit = 1` 是否变成串行。
+
+</Step>
+<Step time="24:00 – 30:00" title="追问">
+
+- 优先 Q1（分批为什么错）和 Q2（失败释放）。
+- 时间够再问 Q3（动态并发数）。
+
+</Step>
+</Timeline>
+
+### 验证清单
+
+<Checklist>
+
+- 跑 1000 / 500 / 300 / 400，输出是否为 `2 3 1 4`
+- 在任务开始和结束时打日志，确认同时运行数从未超过 2
+- 让第二个任务 reject，第三个任务是否仍然启动
+- `limit = 1` 是否严格串行
+- `limit = 0` 是否给出明确错误，而不是静默卡死
+- 任务返回 42，`await add(...)` 是否拿到 42
+- 启动后再 `add` 一个任务，是否被正确排队或执行
+
+</Checklist>
+
+### 如果 15 分钟就做完了：加难变体
+
+| 变体 | 加什么 | 考察点 |
+| --- | --- | --- |
+| 动态并发数 | `setLimit(n)`，运行中调大 / 调小 | 补位时机、已运行任务的处理 |
+| 优先级队列 | 任务带 `priority`，高优先级先出队 | 数据结构、公平性与饥饿 |
+| 取消 | `AbortSignal`，取消排队和运行中的任务 | 槽位释放、错误语义 |
+| 结果聚合 | 按提交顺序返回全部结果 | `Promise.all` / `allSettled` |
+
+### 结束话术（30 秒）
+
+<Callout tone="good">
+
+「如果这些任务里有失败，你希望整个批次失败，还是继续跑完？为什么？」
+
+答「继续跑完，最后汇总失败」通常说明他见过真实的任务编排；答「全部失败」要看他能否说清什么场景下应该快速失败。
+
+</Callout>
